@@ -1,3 +1,13 @@
+/*
+ * -------------------------------------------------------------------
+ * CircuitSetup.us Time Circuits Display - DMX version
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
+ * 
+ * Source code not for public release.
+ * 
+ * -------------------------------------------------------------------
+ */
 
 #include "tc_global.h"
 
@@ -31,17 +41,9 @@ const dateStruct defDestinationTime = {1985, 10, 26,  1, 21};
 const dateStruct defPresentTime     = {1985, 10, 26,  1, 22};
 const dateStruct defDepartedTime    = {1985, 10, 26,  1, 20};
 
-/* First, lets define the hardware pins that we are using with our ESP32. We
-  need to define which pin is transmitting data and which pin is receiving data.
-  DMX circuits also often need to be told when we are transmitting and when we
-  are receiving data. We can do this by defining an enable pin. */
 int transmitPin = DMX_TRANSMIT;
 int receivePin = DMX_RECEIVE;
 int enablePin = DMX_ENABLE;
-
-/* Make sure to double-check that these pins are compatible with your ESP32!
-  Some ESP32s, such as the ESP32-WROVER series, do not allow you to read or
-  write data on pins 16 or 17, so it's always good to read the manuals. */
 
 /* Next, lets decide which DMX port to use. The ESP32 has either 2 or 3 ports.
   Port 0 is typically used to transmit serial data back to your Serial Monitor,
@@ -50,12 +52,9 @@ dmx_port_t dmxPort = 1;
 
 dmx_packet_t packet;
 
-/* Now we want somewhere to store our DMX data. Since a single packet of DMX
-  data can be up to 513 bytes long, we want our array to be at least that long.
-  This library knows that the max DMX packet size is 513, so we can fill in the
-  array size with `DMX_PACKET_SIZE`. */
-byte data[DMX_PACKET_SIZE];
+uint8_t data[DMX_PACKET_SIZE];
 
+// DMX footprints for the displays
 #define DT_BASE 1
 #define PT_BASE 10
 #define LT_BASE 20
@@ -69,7 +68,9 @@ static unsigned long lastDMXpacket;
 static bool          x = false;  
 static bool          y = false;
 
+// Forward declarations
 static void setDisplay(clockDisplay *display, int base);
+
 
 static void startDisplays()
 {
@@ -78,6 +79,12 @@ static void startDisplays()
     departedTime.begin();
 }
 
+
+/*********************************************************************************
+ * 
+ * boot
+ *
+ *********************************************************************************/
 
 void dmx_boot() 
 {
@@ -96,42 +103,19 @@ void dmx_boot()
     // give user some feedback that the unit is powered
     pinMode(LEDS_PIN, OUTPUT);
     digitalWrite(LEDS_PIN, HIGH);
-
-    
-
-    //destinationTime.showTextDirect("WELCOME");
 }    
 
 
 
+/*********************************************************************************
+ * 
+ * setup
+ *
+ *********************************************************************************/
 
 
 void dmx_setup() 
 {
-    // Pin for monitoring seconds from RTC
-    pinMode(SECONDS_IN_PIN, INPUT_PULLDOWN);
-
-    // RTC setup
-    if(!rtc.begin(powerupMillis)) {
-        Serial.println("RTC not found!");
-    }
-    if(rtc.lostPower()) {
-        // Lost power and battery didn't keep time, so set current time to 
-        // default time 1/1/2024, 0:0
-        rtc.adjust(0, 0, 0, 1, 1, 1, 24);
-    }
-
-    // Turn on the RTC's 1Hz clock output
-    rtc.clockOutEnable();
-  
-  /* Now we will install the DMX driver! We'll tell it which DMX port to use,
-    what device configuration to use, and what DMX personalities it should have.
-    If you aren't sure which configuration to use, you can use the macros
-    DMX_CONFIG_DEFAULT to set the configuration to its default settings.
-    This device is being setup as a DMX responder so it is likely that it should
-    respond to DMX commands. It will need at least one DMX personality. Since
-    this is an example, we will use a default personality which only uses 1 DMX
-    slot in its footprint. */
     dmx_config_t config = {
       .interrupt_flags = DMX_INTR_FLAGS_DEFAULT,
       .root_device_parameter_count = 32,
@@ -146,16 +130,34 @@ void dmx_setup()
         {3*10, "TCD Personality"}
     };
     int personality_count = 1;
-    dmx_driver_install(dmxPort, &config, personalities, personality_count);
 
-    /* Now set the DMX hardware pins to the pins that we want to use and setup
-      will be complete! */
+  
+    // Pin for monitoring seconds from RTC
+    pinMode(SECONDS_IN_PIN, INPUT_PULLDOWN);
+
+    // RTC setup
+    if(!rtc.begin(powerupMillis)) {
+        Serial.println("RTC not found!");
+    }
+    if(rtc.lostPower()) {
+        // Lost power and battery didn't keep time, so set some default time
+        rtc.adjust(0, 0, 0, 1, 1, 1, 24);
+    }
+
+    // Turn on the RTC's 1Hz clock output
+    rtc.clockOutEnable();
+  
+    // Start the DMX stuff
+    dmx_driver_install(dmxPort, &config, personalities, personality_count);
     dmx_set_pin(dmxPort, transmitPin, receivePin, enablePin);
 }
 
 
-
-
+/*********************************************************************************
+ * 
+ * loop
+ *
+ *********************************************************************************/
 
 void dmx_loop() 
 {
@@ -184,11 +186,9 @@ void dmx_loop()
             }
           
         } else {
-            /* Oops! A DMX error occurred! Don't worry, this can happen when you first
-              connect or disconnect your DMX devices. If you are consistently getting
-              DMX errors, then something may have gone wrong with your code or
-              something is seriously wrong with your DMX transmitter. */
+            
             Serial.println("A DMX error occurred.");
+            
         }
         
     } 
@@ -214,6 +214,13 @@ void dmx_loop()
     }
 }
 
+
+
+/*********************************************************************************
+ * 
+ * helpers
+ *
+ *********************************************************************************/
 
 static bool isLeapYear(int year)
 {

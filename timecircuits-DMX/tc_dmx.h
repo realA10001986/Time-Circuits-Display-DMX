@@ -1,3 +1,11 @@
+/*
+ * -------------------------------------------------------------------
+ * CircuitSetup.us Time Circuits Display - DMX version
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved. 
+ * 
+ * -------------------------------------------------------------------
+ */
 
 #ifndef _TC_DMX_H
 #define _TC_DMX_H

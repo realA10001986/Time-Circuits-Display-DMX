@@ -77,6 +77,7 @@
  * - Install required libraries. In the Arduino IDE, go to "Tools" -> "Manage Libraries" 
  *   and install the following libraries:
  *   - ArduinoJSON (>= 6.19): https://arduinojson.org/v6/doc/installation/
+ *   - esp_dmx (>= 4.0.1): https://github.com/someweisguy/esp_dmx
  *
  * - Download the complete firmware source code:
  *   https://github.com/realA10001986/Time-Circuits-Display/archive/refs/heads/main.zip

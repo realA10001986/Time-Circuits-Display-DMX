@@ -25,42 +25,12 @@
 
 // These must not contain any characters other than
 // '0'-'9', 'A'-'Z', '(', ')', '.', '_', '-' or space
-#define TC_VERSION "V2.9.99"          // 13 chars max
-#ifndef IS_ACAR_DISPLAY
-#define TC_VERSION_EXTRA "FEB172024"  // 13 chars max
-#else   // A-Car
-#define TC_VERSION_EXTRA "02172024"   // 12 chars max
-#endif
+#define TC_VERSION "V0.1"
+#define TC_VERSION_EXTRA "FEB222024"
+
 
 //#define TC_DBG              // debug output on Serial
 
-
-
-
-
-/*************************************************************************
- ***                 Configuration for peripherals                     ***
- *************************************************************************/
-
-
-// --- end of config options
-
-/*************************************************************************
- ***                           Miscellaneous                           ***
- *************************************************************************/
-
-
-// Custom stuff -----
-#define TWSOUND         // Use A10001986's sound files
-#define TWPRIVATE     // A10001986's private customizations
-
-#ifdef TWPRIVATE
-#undef TC_VERSION
-#define TC_VERSION "A10001986P"
-#elif defined(TWSOUND)
-#undef TC_VERSION
-#define TC_VERSION "A10001986"
-#endif
 
 /*************************************************************************
  ***                  esp32-arduino version detection                  ***
@@ -102,7 +72,7 @@
 #define EXTERNAL_TIMETRAVEL_IN_PIN  27  // Externally triggered TT (input)
 #define EXTERNAL_TIMETRAVEL_OUT_PIN 14  // TT trigger output
 
-
+// DMX
 #define DMX_TRANSMIT 17
 #define DMX_RECEIVE  16
 #define DMX_ENABLE   21
@@ -117,11 +87,7 @@
 #define DISP_LAST     2
 
 // Num of characters on display
-#ifdef IS_ACAR_DISPLAY
-#define DISP_LEN      12
-#else
 #define DISP_LEN      13
-#endif
 
 
 #endif
