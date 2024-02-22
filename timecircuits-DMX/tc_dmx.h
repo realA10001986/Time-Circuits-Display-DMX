@@ -15,6 +15,10 @@
 
 extern unsigned long powerupMillis;
 
+extern clockDisplay destinationTime;
+extern clockDisplay presentTime;
+extern clockDisplay departedTime;
+
 void dmx_boot();
 void dmx_setup();
 void dmx_loop();

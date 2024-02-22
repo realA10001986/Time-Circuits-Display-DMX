@@ -113,7 +113,7 @@ void setup()
     Wire.begin(-1, -1, 100000);
 
     dmx_boot();
-    //settings_setup();
+    settings_setup();
     //keypad_setup();
     dmx_setup();
 }

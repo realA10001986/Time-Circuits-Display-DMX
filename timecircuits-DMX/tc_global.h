@@ -29,7 +29,7 @@
 #define TC_VERSION_EXTRA "FEB222024"
 
 
-//#define TC_DBG              // debug output on Serial
+#define TC_DBG              // debug output on Serial
 
 
 /*************************************************************************
@@ -73,9 +73,9 @@
 #define EXTERNAL_TIMETRAVEL_OUT_PIN 14  // TT trigger output
 
 // DMX
-#define DMX_TRANSMIT 17
-#define DMX_RECEIVE  16
-#define DMX_ENABLE   21
+#define DMX_TRANSMIT 13  //17
+#define DMX_RECEIVE  14  //16
+#define DMX_ENABLE   27  //21
 
 
 /*************************************************************************

@@ -103,6 +103,10 @@ void dmx_boot()
     // give user some feedback that the unit is powered
     pinMode(LEDS_PIN, OUTPUT);
     digitalWrite(LEDS_PIN, HIGH);
+
+    // Set up pin for white LED
+    pinMode(WHITE_LED_PIN, OUTPUT);
+    digitalWrite(WHITE_LED_PIN, LOW);
 }    
 
 
@@ -208,7 +212,7 @@ void dmx_loop()
         departedTime.show();
     }
 
-    if(millis() - lastDMXpacket > 1250) {
+    if(dmxIsConnected && (millis() - lastDMXpacket > 1250)) {
         Serial.println("DMX was disconnected.");
         dmxIsConnected = false;
     }
