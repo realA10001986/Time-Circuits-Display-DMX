@@ -1,9 +1,8 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display - DMX version
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
  * (C) 2024 Thomas Winischhofer (A10001986)
- * All rights reserved. 
- * 
+ * All rights reserved.
  * -------------------------------------------------------------------
  */
 

@@ -1,23 +1,13 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2021-2022 John deGlavina https://circuitsetup.us
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
- *
- * Global definitions
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
+ * -------------------------------------------------------------------
  */
 
 #ifndef _TC_GLOBAL_H
 #define _TC_GLOBAL_H
-
-/*************************************************************************
- ***                           Miscellaneous                           ***
- *************************************************************************/
-
-// Uncomment if month is 2 digits (7-seg), as in the original A-Car display.
-//#define IS_ACAR_DISPLAY
 
 /*************************************************************************
  ***                          Version Strings                          ***
@@ -25,8 +15,8 @@
 
 // These must not contain any characters other than
 // '0'-'9', 'A'-'Z', '(', ')', '.', '_', '-' or space
-#define TC_VERSION "V0.1"
-#define TC_VERSION_EXTRA "FEB222024"
+#define TC_VERSION "V0.02"
+#define TC_VERSION_EXTRA "FEB232024"
 
 
 #define TC_DBG              // debug output on Serial

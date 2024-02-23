@@ -1,11 +1,8 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display - DMX version
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
  * (C) 2024 Thomas Winischhofer (A10001986)
  * All rights reserved.
- * 
- * Source code not for public release.
- * 
  * -------------------------------------------------------------------
  */
 
@@ -54,10 +51,79 @@ dmx_packet_t packet;
 
 uint8_t data[DMX_PACKET_SIZE];
 
+bool colonBlink = false;
+
 // DMX footprints for the displays
 #define DT_BASE 1
-#define PT_BASE 10
-#define LT_BASE 20
+#define PT_BASE 12
+#define LT_BASE 23
+
+static const uint8_t monthRanges[256] = {
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+     3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+     4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,
+     5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
+     6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 
+     7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
+     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8,
+     9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,  9,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12
+};    
+static const uint8_t yearRanges[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   // 0-23
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,      // 24-46
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,      // 47-69
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,   // 70-93
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,      // 94-116
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,      // 117-139
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,      // 140-162
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,   // 163-186
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,      // 187-209
+    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,      // 210-232
+   10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10       // 233-255
+};
+
+static const uint8_t hourRanges[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,        // 0-18
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,           // 19-36
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,           // 37-54
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,           // 55-72
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,           // 73-90
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,           // 91-108
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,           // 109-126
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,           // 127-144
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,           // 145-162
+    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,           // 163-180
+   10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,           // 181-198
+   11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,           // 199-216
+   12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,           // 217-234
+   13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13   // 235-255
+};
+
+static const uint8_t minRanges[256] = {
+    0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,  // 0-16
+    4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,  // 17-33
+    8, 8, 8, 8, 9, 9, 9, 9,10,10,10,10,10,11,11,11,11,  // 34-50
+   12,12,12,12,13,13,13,13,14,14,14,14,15,15,15,15,15,  // 51-67
+   16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,19,     // 68-83
+   20,20,20,20,20,21,21,21,21,22,22,22,22,23,23,23,23,  // 84-100
+   24,24,24,24,25,25,25,25,25,26,26,26,26,27,27,27,27,  // 101-117
+   28,28,28,28,29,29,29,29,30,30,30,30,30,31,31,31,31,  // 118-134
+   32,32,32,32,33,33,33,33,34,34,34,34,35,35,35,35,35,  // 135-151
+   36,36,36,36,37,37,37,37,38,38,38,38,39,39,39,39,     // 152-167
+   40,40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,  // 168-184
+   44,44,44,44,45,45,45,45,45,46,46,46,46,47,47,47,47,  // 185-201
+   48,48,48,48,49,49,49,49,50,50,50,50,50,51,51,51,51,  // 202-218
+   52,52,52,52,53,53,53,53,54,54,54,54,55,55,55,55,55,  // 219-235
+   56,56,56,56,57,57,57,57,58,58,58,58,59,59,59,59,     // 236-251
+   60,60,60,60                                          // 252-255
+};
+ 
+
 
 unsigned long powerupMillis;
 
@@ -131,11 +197,12 @@ void dmx_setup()
       .queue_size_max = 32
     };
     dmx_personality_t personalities[] = {
-        {3*10, "TCD Personality"}
+        {3*11, "TCD Personality"}
     };
     int personality_count = 1;
 
-  
+    Serial.println(F("Time Circuits Display DMX version " TC_VERSION " " TC_VERSION_EXTRA));
+
     // Pin for monitoring seconds from RTC
     pinMode(SECONDS_IN_PIN, INPUT_PULLDOWN);
 
@@ -199,11 +266,19 @@ void dmx_loop()
 
     y = digitalRead(SECONDS_IN_PIN);
     if(y != x) {
-        destinationTime.setColon(!y);
-        presentTime.setColon(!y);
-        departedTime.setColon(!y);
+        if(destinationTime.colonBlink) {
+            destinationTime.setColon(!y);
+            newData = true;
+        }
+        if(presentTime.colonBlink) {
+            presentTime.setColon(!y);
+            newData = true;
+        }
+        if(departedTime.colonBlink) {
+            departedTime.setColon(!y);
+            newData = true;
+        }
         x = y;
-        newData = true;
     }
 
     if(newData) {
@@ -264,37 +339,50 @@ int daysInMonth(int month, int year)
  * 5 = ch6  - Sets 1’s digit for year
  * 6 = ch7  - Sets Hour 1-12
  * 7 = ch8  - Sets Minute 00-59
- * 8 = ch9  - Sets AM/PM (0 = AM, 1 = PM)
- * 9 = ch10 - Master Intensity (0-16)
+ * 8 = ch9  - Sets AM/PM (0 = AM, 1 = PM)     (fs: 0-127=AM, 128-255=PM)
+ * 9 = ch10 - colon (0-85=off; 86-170=on; >171 blink) 
+ * 10 = ch11 - Master Intensity (0-255)
  */
+
+
 static void setDisplay(clockDisplay *display, int base)
-{  
-      int year = (data[base + 2] * 1000) +
-                 (data[base + 3] * 100) +
-                 (data[base + 4] * 10) +
-                 data[base + 5];
-      display->setYear(year);
-      display->setMonth(data[base + 0]);
-      display->setDay(data[base + 1]);
-      display->setMinute(data[base + 7]);
-      int hour = data[base + 6];
-      if(data[base + 8]) {   // PM
-          if(hour < 12) {
-              hour += 12;
-          }
-      } else {               // AM
-          if(hour == 12) {
-              hour = 0;
-          }
+{
+      int mbri;
+
+      display->setMonth(monthRanges[data[base + 0]]);
+
+      display->setDay(data[base + 1] / 8);
+
+      display->setYearDigits(yearRanges[data[base + 2]], yearRanges[data[base + 3]],
+                             yearRanges[data[base + 4]], yearRanges[data[base + 5]]);
+
+      display->setHour12(hourRanges[data[base + 6]]);
+      
+      display->setMinute(minRanges[data[base + 7]]);
+
+      if(data[base + 8] <= 127) display->setAMPM(1);  // PM
+      else                      display->setAMPM(0);  // AM  
+      // no off?
+
+      if(data[base + 9] <= 85) {
+          display->setColon(false);
+          display->colonBlink = false;
+      } else if(data[base + 9] <= 170) {
+          display->setColon(true);
+          display->colonBlink = false;
+      } else {
+          display->colonBlink = true;
       }
-      display->setHour(hour);
 
-      display->show();
+      mbri = data[base + 10] /= 15; // Brightness
+      if(mbri > 16) mbri = 16;
 
-      if(data[base + 9]) {
-          display->setBrightness(data[base + 9] - 1);
+      if(mbri) {
+          display->setBrightness(mbri - 1);
           display->on();
       } else {
           display->off();
       }
+
+      display->show();
 }

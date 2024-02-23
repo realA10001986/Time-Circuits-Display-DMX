@@ -1,36 +1,9 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2021-2022 John deGlavina https://circuitsetup.us
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
- *
- * Clockdisplay Class: Handles the TC LED segment displays
- *
- * Based on code by John Monaco, Marmoset Electronics
- * https://www.marmosetelectronics.com/time-circuits-clock
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
  * -------------------------------------------------------------------
- * License: MIT
- * 
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, 
- * merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to 
- * do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #ifndef _CLOCKDISPLAY_H
@@ -83,26 +56,13 @@ class clockDisplay {
         void set1224(bool hours24);
         bool get1224();
 
-        void setNightMode(bool mode);
-        bool getNightMode();
-        void setNMOff(bool NMOff);
-
         void setRTC(bool rtc);  // make this an RTC display
         bool isRTC();
 
         void show();
         void showAnimate1();
-        #ifdef BTTF3_ANIM
-        void showAnimate2(int until = CD_BUF_SIZE);
-        void showAnimate3(int mystep);
-        #else
         void showAnimate2();
-        #endif
 
-        void showAlt();
-        void setAltText(const char *text);
-
-        //void setDateTime(DateTime& dt);          // Set object date & time using a DateTime
         void setFromStruct(const dateStruct *s); // Set object date & time from struct
         void setFromParms(int year, int month, int day, int hour, int minute);
 
@@ -111,12 +71,13 @@ class clockDisplay {
         void setMonth(int monthNum);
         void setDay(int dayNum);
         void setYear(uint16_t yearNum);
+        void setYearDigits(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);
         void setHour(uint16_t hourNum);
+        void setHour12(uint16_t hourNum);
         void setMinute(int minNum);
+        void setAMPM(int isPM);
 
         void setColon(bool col);
-
-        void setYearOffset(int16_t yearOffs);
 
         uint8_t  getMonth();
         uint8_t  getDay();
@@ -126,8 +87,6 @@ class clockDisplay {
 
         const char* getMonthString(uint8_t month);
 
-        int16_t  getYearOffset();
-
         void showMonthDirect(int monthNum, uint16_t dflags = 0);
         void showDayDirect(int dayNum, uint16_t dflags = 0);
         void showHourDirect(int hourNum, uint16_t dflags = 0);
@@ -135,28 +94,20 @@ class clockDisplay {
         void showYearDirect(int yearNum, uint16_t dflags = 0);
 
         void showTextDirect(const char *text, uint16_t flags = CDT_CLEAR);
-        void showHalfIPDirect(int a, int b, uint16_t flags = 0);
-        void showSettingValDirect(const char* setting, int8_t val = -1, uint16_t flags = 0);
 
-        #ifdef TC_HAVETEMP
-        void showTempDirect(float temp, bool tempUnit, bool animate = false);
-        void showHumDirect(int hum, bool animate = false);
-        #endif
+        bool colonBlink = false;
 
     private:
 
         uint8_t  getLED7NumChar(uint8_t value);
         uint8_t  getLED7AlphaChar(uint8_t value);
-        #ifndef IS_ACAR_DISPLAY
         uint16_t getLEDAlphaChar(uint8_t value);
-        #endif
-
+        
         uint16_t makeNum(uint8_t num, uint16_t dflags = 0);
 
         void directCol(int col, int segments);
 
         void clearDisplay();
-        bool handleNM();
         void showInt(bool animate = false, bool Alt = false);
 
         void colonOn();
@@ -188,6 +139,7 @@ class clockDisplay {
         uint8_t _day = 1;
         uint8_t _hour = 0;
         uint8_t _minute = 0;
+        int     _isPM = 0;
         bool    _colon = false;         // should colon be on?
         bool    _rtc = false;           // will this be displaying real time
         uint8_t _brightness = 15;       // current display brightness

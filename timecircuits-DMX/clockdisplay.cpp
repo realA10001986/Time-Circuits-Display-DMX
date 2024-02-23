@@ -1,36 +1,9 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2021-2022 John deGlavina https://circuitsetup.us
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
- *
- * Clockdisplay Class: Handles the TC LED segment displays
- *
- * Based on code by John Monaco, Marmoset Electronics
- * https://www.marmosetelectronics.com/time-circuits-clock
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
  * -------------------------------------------------------------------
- * License: MIT
- * 
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, 
- * merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to 
- * do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "tc_global.h"
@@ -57,24 +30,10 @@
 #define CD_AMPM_POS   CD_DAY_POS
 #define CD_COLON_POS  CD_YEAR_POS
 
-extern int      daysInMonth(int month, int year);
-
 static const char months[12][4] = {
     "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
 };
-
-#ifdef BTTF3_ANIM
-static const uint8_t idxtbl[] = {
-        0, 
-        CD_DAY_POS, CD_DAY_POS, 
-        CD_YEAR_POS, CD_YEAR_POS, 
-        CD_YEAR_POS + 1, CD_YEAR_POS + 1, 
-        CD_HOUR_POS, 
-        CD_HOUR_POS, CD_HOUR_POS, 
-        CD_MIN_POS, CD_MIN_POS
-};
-#endif
 
 static const char *nullStr = "";
 
@@ -186,9 +145,6 @@ uint8_t clockDisplay::setBrightness(uint8_t level, bool setInitial)
 void clockDisplay::resetBrightness()
 {
     _brightness = setBrightnessDirect(_origBrightness);
-    // This forces handleNM to reset NM-brightness if
-    // this is called while NM is active.
-    if(!_NmOff) _oldnm = 0;
 }
 
 uint8_t clockDisplay::setBrightnessDirect(uint8_t level)
@@ -216,21 +172,6 @@ bool clockDisplay::get1224(void)
     return _mode24;
 }
 
-void clockDisplay::setNightMode(bool mymode)
-{
-    _nightmode = mymode;
-}
-
-bool clockDisplay::getNightMode(void)
-{
-    return _nightmode;
-}
-
-void clockDisplay::setNMOff(bool NMOff)
-{
-    _NmOff = NMOff;
-}
-
 // Track if this is will be holding real time.
 void clockDisplay::setRTC(bool rtc)
 {
@@ -245,18 +186,6 @@ bool clockDisplay::isRTC()
 
 // Setup date in buffer --------------------------------------------------------
 
-
-// Set the displayed time with supplied DateTime object
-/*
-void clockDisplay::setDateTime(DateTime& dt)
-{
-    setYear(dt.year());
-    setMonth(dt.month());
-    setDay(dt.day());
-    setHour(dt.hour());
-    setMinute(dt.minute());
-}
-*/
 
 // Set YEAR, MONTH, DAY, HOUR, MIN from structure
 void clockDisplay::setFromStruct(const dateStruct *s)
@@ -303,12 +232,8 @@ void clockDisplay::showAnimate1()
 }
 
 // Show month, assumes showAnimate1() was called before
-#ifndef BTTF3_ANIM
 void clockDisplay::showAnimate2()
 {
-    if(_nightmode && _NmOff)
-        return;
-
     Wire.beginTransmission(_address);
     Wire.write(0x00);
     for(int i = 0; i < CD_BUF_SIZE; i++) {
@@ -318,140 +243,39 @@ void clockDisplay::showAnimate2()
     Wire.endTransmission();
 }
 
-#else
-
-void clockDisplay::showAnimate2(int until)
-{
-    if(_nightmode && _NmOff)
-        return;
-
-    Wire.beginTransmission(_address);
-    Wire.write(0x00);
-    for(int i = 0; i < until; i++) {
-        Wire.write(_displayBuffer[i] & 0xff);
-        Wire.write(_displayBuffer[i] >> 8);
-    }
-    for(int i = until; i < CD_BUF_SIZE; i++) {
-        Wire.write(0x00);
-        Wire.write(0x00);
-    }
-    Wire.endTransmission();
-}
-
-void clockDisplay::showAnimate3(int mystep)
-{
-    uint16_t buf;
-    uint16_t *bu;
-    
-    if(!mystep) {
-        if(!handleNM())
-            return;
-        off();
-        AMPMoff();
-        colonOff();
-        showAnimate2(CD_DAY_POS);
-        on();
-        if(_NmOff) _oldnm = 0;
-    }
-    
-    uint8_t lim = idxtbl[mystep] + 1;
-    
-    switch(mystep) {
-    case 1:
-    case 3:
-    case 5:
-    case 8:
-    case 10:
-        bu = &_displayBuffer[idxtbl[mystep]];
-        buf = *bu;
-        *bu &= 0xff;
-        showAnimate2(lim);
-        *bu = buf;
-        break;
-    case 7:
-        if(!_mode24) {
-            (_hour < 12) ? AM() : PM();
-        }
-    default:
-        showAnimate2(lim);
-    }
-}
-#endif // BTTF3_ANIM
-
-void clockDisplay::showAlt()
-{
-    showInt(false, true);
-}
-
-// Put the given text into _displayBufferAlt
-void clockDisplay::setAltText(const char *text)
-{
-    int idx = 0, pos = CD_MONTH_POS;
-    int temp = 0;
-
-#ifdef IS_ACAR_DISPLAY
-    while(text[idx] && pos < (CD_MONTH_POS+CD_MONTH_SIZE)) {
-        temp = getLED7AlphaChar(text[idx++]);
-        if(text[idx]) {
-            temp |= (getLED7AlphaChar(text[idx++]) << 8);
-        }
-        _displayBufferAlt[pos++] = temp;
-    }
-#else
-    while(text[idx] && pos < (CD_MONTH_POS+CD_MONTH_SIZE)) {
-        _displayBufferAlt[pos++] = getLEDAlphaChar(text[idx++]);
-    }
-#endif
-
-    while(pos < CD_DAY_POS) {
-        _displayBufferAlt[pos++] = 0;
-    }
-    
-    pos = CD_DAY_POS;
-    while(text[idx] && pos <= CD_MIN_POS) {
-        temp = getLED7AlphaChar(text[idx++]);
-        if(text[idx]) {
-            temp |= (getLED7AlphaChar(text[idx++]) << 8);
-        }
-        _displayBufferAlt[pos++] = temp;
-    }
-
-    while(pos <= CD_MIN_POS) {
-        _displayBufferAlt[pos++] = 0;
-    }
-}
-
-
 // Set fields in buffer --------------------------------------------------------
 
 
 void clockDisplay::setMonth(int monthNum)
 {
+    if(!monthNum) {
+        _displayBuffer[CD_MONTH_POS]     = 0;
+        _displayBuffer[CD_MONTH_POS + 1] = 0;
+        _displayBuffer[CD_MONTH_POS + 2] = 0;
+        return;
+    }
+    
     if(monthNum < 1 || monthNum > 12) {
         monthNum = (monthNum > 12) ? 12 : 1;
     }
 
     _month = monthNum;
 
-#ifdef IS_ACAR_DISPLAY
-    _displayBuffer[CD_MONTH_POS] = makeNum(monthNum);
-#else
     monthNum--;
     _displayBuffer[CD_MONTH_POS]     = getLEDAlphaChar(months[monthNum][0]);
     _displayBuffer[CD_MONTH_POS + 1] = getLEDAlphaChar(months[monthNum][1]);
     _displayBuffer[CD_MONTH_POS + 2] = getLEDAlphaChar(months[monthNum][2]);
-#endif
 }
 
 void clockDisplay::setDay(int dayNum)
 {
-    int maxDay = daysInMonth(_month, _year);
+    if(!dayNum) {
+        _displayBuffer[CD_DAY_POS] = 0;
+        return;
+    }
 
-    // It is essential that setDay is called AFTER year
-    // and month have been set!
-
-    if(dayNum < 1 || dayNum > maxDay) {
-        dayNum = (dayNum < 1) ? 1 : maxDay;
+    if(dayNum < 1 || dayNum > 31) {
+        dayNum = (dayNum < 1) ? 1 : 31;
     }
 
     _day = dayNum;
@@ -461,23 +285,39 @@ void clockDisplay::setDay(int dayNum)
 
 void clockDisplay::setYear(uint16_t yearNum)
 {
-    uint16_t seg = 0;
-
     _year = yearNum;
 
     while(yearNum >= 10000)
         yearNum -= 10000;
 
     _displayBuffer[CD_YEAR_POS]     = makeNum(yearNum / 100);
-    _displayBuffer[CD_YEAR_POS + 1] = makeNum(yearNum % 100) | seg;
+    _displayBuffer[CD_YEAR_POS + 1] = makeNum(yearNum % 100);
+}
+
+void clockDisplay::setYearDigits(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4)
+{
+    uint16_t seg = 0;
+
+    // Each position holds two digits
+    // MSB = 1s, LSB = 10s
+
+    seg = d2 ? getLED7NumChar(d2 - 1) << 8 : 0;
+    seg |= d1 ? getLED7NumChar(d1 - 1) : 0;
+    _displayBuffer[CD_YEAR_POS]     = seg;
+    
+    seg = d4 ? getLED7NumChar(d4 - 1) << 8 : 0;
+    seg |= d3 ? getLED7NumChar(d3 - 1) : 0;
+    _displayBuffer[CD_YEAR_POS + 1] = seg;
 }
 
 void clockDisplay::setHour(uint16_t hourNum)
 {
     uint16_t seg = 0;
     
-    if(hourNum > 23)
-        hourNum = 23;
+    if(!hourNum) {
+        _displayBuffer[CD_HOUR_POS] = 0;
+        return;
+    }
 
     _hour = hourNum;
 
@@ -494,9 +334,24 @@ void clockDisplay::setHour(uint16_t hourNum)
     // AM/PM will be set on show() to avoid being overwritten
 }
 
+void clockDisplay::setHour12(uint16_t hourNum)
+{
+    if(!hourNum) {
+        _displayBuffer[CD_HOUR_POS] = 0;
+        return;
+    }
+
+    _displayBuffer[CD_HOUR_POS] = makeNum(hourNum - 1);
+}
+
 void clockDisplay::setMinute(int minNum)
 {
-    uint16_t seg = 0;
+    if(!minNum) {
+        _displayBuffer[CD_MIN_POS] = 0;
+        return;
+    }
+
+    minNum--;
     
     if(minNum < 0 || minNum > 59) {
         minNum = (minNum > 59) ? 59 : 0;
@@ -504,7 +359,15 @@ void clockDisplay::setMinute(int minNum)
 
     _minute = minNum;
 
-    _displayBuffer[CD_MIN_POS] = makeNum(minNum) | seg;
+    _displayBuffer[CD_MIN_POS] = makeNum(minNum);
+}
+
+void clockDisplay::setAMPM(int isPM)
+{
+    // -1 = off
+    // 0  = am
+    // 1  = pm
+    _isPM = isPM;
 }
 
 void clockDisplay::setColon(bool col)
@@ -514,17 +377,6 @@ void clockDisplay::setColon(bool col)
     
     _colon = _nightmode ? true : col;
 }
-
-void clockDisplay::setYearOffset(int16_t yearOffs)
-{
-    if(_rtc) {
-        _yearoffset = yearOffs;
-        #ifdef TC_DBG
-        Serial.printf("ClockDisplay: _yearoffset set to %d\n", yearOffs);
-        #endif
-    }
-}
-
 
 // Query data ------------------------------------------------------------------
 
@@ -561,12 +413,6 @@ const char * clockDisplay::getMonthString(uint8_t mon)
     else
         return nullStr;
 }
-
-int16_t clockDisplay::getYearOffset()
-{
-    return _yearoffset;
-}
-
 
 // Put data directly on display (bypass buffer) --------------------------------
 
@@ -703,105 +549,6 @@ void clockDisplay::showTextDirect(const char *text, uint16_t flags)
     _corr6 = _withColon = false;
 }
 
-// Clear the display RAM and only show the provided 2 numbers (parts of IP)
-void clockDisplay::showHalfIPDirect(int a, int b, uint16_t flags)
-{
-    char buf[16];
-    #ifdef IS_ACAR_DISPLAY
-    const char *fmt1 = "%3d  %3d";
-    const char *fmt2 = "%2d   %3d";
-    #else
-    const char *fmt = "%3d   %3d";
-    #endif
-
-    if(a > 255) a = 255;    // Avoid buf overflow if numbers too high
-    if(b > 255) b = 255;
-
-    #ifdef IS_ACAR_DISPLAY
-    sprintf(buf, (a >= 100) ? fmt1 : fmt2, a, b);
-    #else
-    sprintf(buf, fmt, a, b);
-    #endif
-    showTextDirect(buf, flags);
-}
-
-// Show a text part and a number
-void clockDisplay::showSettingValDirect(const char* setting, int8_t val, uint16_t flags)
-{
-    showTextDirect(setting, flags);
-
-    int field = (strlen(setting) <= CD_MONTH_DIGS) ? CD_DAY_POS : CD_MIN_POS;
-
-    if(!(flags & CDT_BLINK) && (val >= 0 && val < 100))
-         directCol(field, makeNum(val));
-    else
-         directCol(field, 0x00);
-}
-
-#ifdef TC_HAVETEMP
-void clockDisplay::showTempDirect(float temp, bool tempUnit, bool animate)
-{
-    char buf[32];
-    const char *ttem = animate ? "    " : "TEMP";
-    int t2; 
-
-    if(!handleNM())
-        return;
-
-    if(isnan(temp)) {
-        #ifdef IS_ACAR_DISPLAY
-        sprintf(buf, "%s  ----~%c", ttem, tempUnit ? 'C' : 'F');
-        #else
-        sprintf(buf, "%s   ----~%c", ttem, tempUnit ? 'C' : 'F');
-        #endif
-    } else {
-        t2 = abs((int)(temp * 100.0) - ((int)temp * 100));
-        #ifdef IS_ACAR_DISPLAY
-        sprintf(buf, "%s%4d%02d~%c", ttem, (int)temp, t2, tempUnit ? 'C' : 'F');
-        #else
-        sprintf(buf, "%s %4d%02d~%c", ttem, (int)temp, t2, tempUnit ? 'C' : 'F');
-        #endif
-    }
-    
-    _yearDot = true;
-    showTextDirect(buf);
-    _yearDot = false;
-
-    if(animate || (_NmOff && (_oldnm > 0)) ) on();
-
-    if(_NmOff) _oldnm = 0;
-}
-
-void clockDisplay::showHumDirect(int hum, bool animate)
-{
-    char buf[16];
-    const char *thum = animate ? "        " : "HUMIDITY";
-
-    if(!handleNM())
-        return;
-
-    if(hum < 0) {
-        #ifdef IS_ACAR_DISPLAY
-        sprintf(buf, "%s--\x7f\x80", thum);
-        #else
-        sprintf(buf, "%s --\x7f\x80", thum);
-        #endif
-    } else {
-        #ifdef IS_ACAR_DISPLAY
-        sprintf(buf, "%s%2d\x7f\x80", thum, hum);
-        #else
-        sprintf(buf, "%s %2d\x7f\x80", thum, hum);
-        #endif
-    }
-
-    showTextDirect(buf);
-
-    if(animate || (_NmOff && (_oldnm > 0)) ) on();
-
-    if(_NmOff) _oldnm = 0;
-}
-#endif
-
 
 // Private functions ###########################################################
 
@@ -894,45 +641,17 @@ void clockDisplay::clearDisplay()
     Wire.endTransmission();
 }
 
-bool clockDisplay::handleNM()
-{
-    if(_nightmode) {
-        if(_NmOff) {
-            off();
-            _oldnm = 1;
-            return false;
-        } else {
-            if(_oldnm < 1) {
-                setBrightness(0);
-            }
-            _oldnm = 1;
-        }
-    } else if(!_NmOff) {
-        if(_oldnm > 0) {
-            setBrightness(_origBrightness);
-        }
-        _oldnm = 0;
-    }
-
-    return true;
-}
-
 // Show the buffer
 void clockDisplay::showInt(bool animate, bool Alt)
 {
     int i = 0;
-    uint16_t *db = Alt ? _displayBufferAlt : _displayBuffer;
-
-    if(!handleNM())
-        return;
+    uint16_t *db = _displayBuffer;
 
     if(animate) off();
 
-    if(!_mode24) {
-        (_hour < 12) ? AM() : PM();
-    } else {
-        AMPMoff();
-    }
+    if(_isPM > 0)   PM();
+    else if(!_isPM) AM();
+    else            AMPMoff();
 
     (_colon) ? colonOn() : colonOff();
 
@@ -953,9 +672,7 @@ void clockDisplay::showInt(bool animate, bool Alt)
 
     Wire.endTransmission();
 
-    if(animate || (_NmOff && (_oldnm > 0)) ) on();
-
-    if(_NmOff) _oldnm = 0;
+    if(animate) on();
 }
 
 void clockDisplay::colonOn()

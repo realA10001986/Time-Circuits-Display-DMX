@@ -1,34 +1,9 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2021-2022 John deGlavina https://circuitsetup.us
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
- *
- * Settings & file handling
- *
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
  * -------------------------------------------------------------------
- * License: MIT
- * 
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, 
- * merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to 
- * do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "tc_global.h"
@@ -69,8 +44,8 @@
 #define DECLARE_D_JSON(x,n) DynamicJsonDocument n(x);
 #endif 
 
-static const char *fwfn = "/timecircuits-DMX.ino.nodemcu-32s.bin";
-static const char *fwfnold = "/timecircuits-DMX.ino.nodemcu-32s.old";
+static const char *fwfn = "/tcd-DMX.ino.nodemcu-32s.bin";
+static const char *fwfnold = "/tcd-DMX.ino.nodemcu-32s.old";
 
 static const char *fsNoAvail = "File System not available";
 static const char *failFileWrite = "Failed to open file for writing";
@@ -217,10 +192,14 @@ static bool firmware_update()
             destinationTime.showTextDirect("DONE");
             delay(3000);
             ESP.restart();
+        } else {
+            Serial.printf("Firmware update error %d\n", Update.getError());
         }
     } else {
-        Update.end();
+        Update.abort();
     }
+
+    myFile.close();
 
     return false;
 }    
@@ -254,8 +233,6 @@ void formatFlashFS()
     #endif
     SPIFFS.format();
 }
-
-
 
 #if 0
 /*
@@ -391,33 +368,5 @@ bool writeFileToFS(const char *fn, uint8_t *buf, int len)
         return (bytesw == len);
     } else
         return false;
-}
-
-bool openACFile(File& file)
-{
-    if(haveSD) {
-        if(file = SD.open(CONFN, FILE_WRITE)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-size_t writeACFile(File& file, uint8_t *buf, size_t len)
-{
-    return file.write(buf, len);
-}
-
-void closeACFile(File& file)
-{
-    file.close();
-}
-
-void removeACFile()
-{
-    if(haveSD) {
-        SD.remove(CONFN);
-    }
 }
 #endif
