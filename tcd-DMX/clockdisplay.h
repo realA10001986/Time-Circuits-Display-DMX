@@ -96,6 +96,7 @@ class clockDisplay {
         void showTextDirect(const char *text, uint16_t flags = CDT_CLEAR);
 
         bool colonBlink = false;
+        bool isOn = false;
 
     private:
 

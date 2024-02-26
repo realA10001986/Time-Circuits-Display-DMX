@@ -15,8 +15,8 @@
 
 // These must not contain any characters other than
 // '0'-'9', 'A'-'Z', '(', ')', '.', '_', '-' or space
-#define TC_VERSION "V0.02"
-#define TC_VERSION_EXTRA "FEB232024"
+#define TC_VERSION "V0.04"
+#define TC_VERSION_EXTRA "FEB262024"
 
 
 #define TC_DBG              // debug output on Serial
@@ -63,9 +63,9 @@
 #define EXTERNAL_TIMETRAVEL_OUT_PIN 14  // TT trigger output
 
 // DMX
-#define DMX_TRANSMIT 13  //17
-#define DMX_RECEIVE  14  //16
-#define DMX_ENABLE   27  //21
+#define DMX_TRANSMIT 14 //13
+#define DMX_RECEIVE  13 //14
+#define DMX_ENABLE   27
 
 
 /*************************************************************************

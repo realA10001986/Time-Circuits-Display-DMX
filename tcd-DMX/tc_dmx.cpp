@@ -43,20 +43,25 @@ int receivePin = DMX_RECEIVE;
 int enablePin = DMX_ENABLE;
 
 /* Next, lets decide which DMX port to use. The ESP32 has either 2 or 3 ports.
-  Port 0 is typically used to transmit serial data back to your Serial Monitor,
-  so we shouldn't use that port. Lets use port 1! */
+   Port 0 is typically used to transmit serial data back to your Serial Monitor,
+   so we shouldn't use that port. Lets use port 1! */
 dmx_port_t dmxPort = 1;
 
 dmx_packet_t packet;
 
 uint8_t data[DMX_PACKET_SIZE];
 
-bool colonBlink = false;
+#define DMX_ADDRESS 1
+#define DMX_CHANNELS_PER_DISPLAY 11
 
-// DMX footprints for the displays
-#define DT_BASE 1
-#define PT_BASE 12
-#define LT_BASE 23
+uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
+uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
+uint8_t cachelt[DMX_CHANNELS_PER_DISPLAY];
+
+// DMX addresses for the displays
+#define DT_BASE DMX_ADDRESS
+#define PT_BASE (DT_BASE+DMX_CHANNELS_PER_DISPLAY)
+#define LT_BASE (PT_BASE+DMX_CHANNELS_PER_DISPLAY)
 
 static const uint8_t monthRanges[256] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -122,8 +127,6 @@ static const uint8_t minRanges[256] = {
    56,56,56,56,57,57,57,57,58,58,58,58,59,59,59,59,     // 236-251
    60,60,60,60                                          // 252-255
 };
- 
-
 
 unsigned long powerupMillis;
 
@@ -134,8 +137,10 @@ static unsigned long lastDMXpacket;
 static bool          x = false;  
 static bool          y = false;
 
+static int           kpleds = 0;
+
 // Forward declarations
-static void setDisplay(clockDisplay *display, int base);
+static void setDisplay(clockDisplay *display, int base, int kpbit);
 
 
 static void startDisplays()
@@ -143,6 +148,13 @@ static void startDisplays()
     presentTime.begin();
     destinationTime.begin();
     departedTime.begin();
+}
+
+static void invalidateCache()
+{
+    for(int i = 0; i < DMX_CHANNELS_PER_DISPLAY; i++) {
+        cachedt[i] = cachept[i] = cachelt[i] = rand() % 255;
+    }
 }
 
 
@@ -165,12 +177,11 @@ void dmx_boot()
     presentTime.setFromStruct(&defPresentTime);
     departedTime.setFromStruct(&defDepartedTime);
 
-    // Switch LEDs on
-    // give user some feedback that the unit is powered
+    // Init color LEDs, keep them off
     pinMode(LEDS_PIN, OUTPUT);
-    digitalWrite(LEDS_PIN, HIGH);
+    digitalWrite(LEDS_PIN, LOW);
 
-    // Set up pin for white LED
+    // Init white LED, keep it off
     pinMode(WHITE_LED_PIN, OUTPUT);
     digitalWrite(WHITE_LED_PIN, LOW);
 }    
@@ -197,7 +208,7 @@ void dmx_setup()
       .queue_size_max = 32
     };
     dmx_personality_t personalities[] = {
-        {3*11, "TCD Personality"}
+        {3*DMX_CHANNELS_PER_DISPLAY, "TCD Personality"}
     };
     int personality_count = 1;
 
@@ -217,6 +228,8 @@ void dmx_setup()
 
     // Turn on the RTC's 1Hz clock output
     rtc.clockOutEnable();
+
+    invalidateCache();
   
     // Start the DMX stuff
     dmx_driver_install(dmxPort, &config, personalities, personality_count);
@@ -232,64 +245,92 @@ void dmx_setup()
 
 void dmx_loop() 
 {
-    bool newData = false;    
+    bool newDataDT = false;
+    bool newDataPT = false;
+    bool newDataLT = false;
     
     if(dmx_receive(dmxPort, &packet, 0)) {
         
         lastDMXpacket = millis();
     
-        if (!packet.err) {
+        if(!packet.err) {
 
             if(!dmxIsConnected) {
-                Serial.println("DMX is connected!");
+                Serial.println("DMX is connected");
                 dmxIsConnected = true;
             }
       
             dmx_read(dmxPort, data, packet.size);
       
             if(!data[0]) {
-                setDisplay(&destinationTime, DT_BASE);
-                setDisplay(&presentTime, PT_BASE);
-                setDisplay(&departedTime, LT_BASE);
-                newData = true;
+                if(memcmp(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                    setDisplay(&destinationTime, DT_BASE, 1);
+                    newDataDT = true;
+                    memcpy(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                }
+                if(memcmp(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                    setDisplay(&presentTime, PT_BASE, 2);
+                    newDataPT = true;
+                    memcpy(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                }
+                if(memcmp(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                    setDisplay(&departedTime, LT_BASE, 4);
+                    newDataLT = true;
+                    memcpy(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                }
             } else {
-                Serial.printf("Unrecognized start code %d (0x%02x)", data[0]);
+                Serial.printf("Unrecognized start code %d (0x%02x)", data[0], data[0]);
             }
           
         } else {
             
-            Serial.println("A DMX error occurred.");
+            Serial.println("A DMX error occurred");
             
         }
         
-    } 
+    }
 
     y = digitalRead(SECONDS_IN_PIN);
     if(y != x) {
         if(destinationTime.colonBlink) {
             destinationTime.setColon(!y);
-            newData = true;
+            newDataDT = true;
         }
         if(presentTime.colonBlink) {
             presentTime.setColon(!y);
-            newData = true;
+            newDataPT = true;
         }
         if(departedTime.colonBlink) {
             departedTime.setColon(!y);
-            newData = true;
+            newDataLT = true;
         }
         x = y;
     }
 
-    if(newData) {
+    if(newDataDT) {
         destinationTime.show();
+        if(destinationTime.isOn) destinationTime.on();
+    }
+    if(newDataPT) {
         presentTime.show();
+        if(presentTime.isOn) presentTime.on();
+    }
+    if(newDataLT) {
         departedTime.show();
+        if(departedTime.isOn) departedTime.on();
+    }
+    if(newDataDT || newDataPT || newDataLT) {
+        if(kpleds) {
+            digitalWrite(LEDS_PIN, HIGH);
+        } else {
+            digitalWrite(LEDS_PIN, LOW);
+        }
     }
 
     if(dmxIsConnected && (millis() - lastDMXpacket > 1250)) {
-        Serial.println("DMX was disconnected.");
+        Serial.println("DMX was disconnected");
         dmxIsConnected = false;
+        invalidateCache();
     }
 }
 
@@ -342,10 +383,13 @@ int daysInMonth(int month, int year)
  * 8 = ch9  - Sets AM/PM (0 = AM, 1 = PM)     (fs: 0-127=AM, 128-255=PM)
  * 9 = ch10 - colon (0-85=off; 86-170=on; >171 blink) 
  * 10 = ch11 - Master Intensity (0-255)
+ * 
+ * Keypad LEDs are off if all displays' Intensity is 0
+ * otherwise on
  */
 
 
-static void setDisplay(clockDisplay *display, int base)
+static void setDisplay(clockDisplay *display, int base, int kpbit)
 {
       int mbri;
 
@@ -362,7 +406,7 @@ static void setDisplay(clockDisplay *display, int base)
 
       if(data[base + 8] <= 127) display->setAMPM(1);  // PM
       else                      display->setAMPM(0);  // AM  
-      // no off?
+      // no off?                display->setAMPM(-1); // off
 
       if(data[base + 9] <= 85) {
           display->setColon(false);
@@ -379,10 +423,11 @@ static void setDisplay(clockDisplay *display, int base)
 
       if(mbri) {
           display->setBrightness(mbri - 1);
-          display->on();
+          display->isOn = true;     // off immediately, on after show in loop()
+          kpleds |= kpbit;
       } else {
-          display->off();
+          display->off();           // off immediately, on after show in loop()
+          display->isOn = false;
+          kpleds &= ~kpbit;
       }
-
-      display->show();
 }
