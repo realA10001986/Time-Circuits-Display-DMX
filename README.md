@@ -10,7 +10,7 @@ Pin mapping:
      <td align="center">J1 P14</td>
     </tr>
     <tr>
-     <td align="center">IO14"</td>
+     <td align="center">IO14</td>
      <td align="center">J1 P15</td>
     </tr>
     <tr>
