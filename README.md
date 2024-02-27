@@ -19,7 +19,7 @@ Pin mapping:
     </tr>
 </table>
 
-5V+GND via J12
+5V+GND from TCD screw terminal to J12
 
 3.3V via voltage converter; 3.3V -> J1 P2
 
