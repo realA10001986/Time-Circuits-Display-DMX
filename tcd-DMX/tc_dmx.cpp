@@ -42,9 +42,7 @@ int transmitPin = DMX_TRANSMIT;
 int receivePin = DMX_RECEIVE;
 int enablePin = DMX_ENABLE;
 
-/* Next, lets decide which DMX port to use. The ESP32 has either 2 or 3 ports.
-   Port 0 is typically used to transmit serial data back to your Serial Monitor,
-   so we shouldn't use that port. Lets use port 1! */
+/* We have 3 ports (0-2). Port 0 is for the Serial Monitor. */
 dmx_port_t dmxPort = 1;
 
 dmx_packet_t packet;
@@ -53,6 +51,8 @@ uint8_t data[DMX_PACKET_SIZE];
 
 #define DMX_ADDRESS 1
 #define DMX_CHANNELS_PER_DISPLAY 11
+
+#define DMX_SLOTS_TO_RECEIVE (DMX_ADDRESS + (3*DMX_CHANNELS_PER_DISPLAY))
 
 uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
@@ -243,13 +243,21 @@ void dmx_setup()
  *
  *********************************************************************************/
 
+#ifdef TCD_DBG
+int cnt = 0;
+#define SID_BASE 34
+#endif
+
 void dmx_loop() 
 {
     bool newDataDT = false;
     bool newDataPT = false;
     bool newDataLT = false;
+    #ifdef TCD_DBG
+    bool isAllZero = true;
+    #endif
     
-    if(dmx_receive(dmxPort, &packet, 0)) {
+    if(dmx_receive_num(dmxPort, &packet, DMX_SLOTS_TO_RECEIVE, 0)) {
         
         lastDMXpacket = millis();
     
@@ -263,6 +271,19 @@ void dmx_loop()
             dmx_read(dmxPort, data, packet.size);
       
             if(!data[0]) {
+
+                #ifdef TCD_DBG
+                for(int i = DMX_ADDRESS; i < DMX_ADDRESS+(3*DMX_CHANNELS_PER_DISPLAY); i++) {
+                   if(data[i]) {
+                        isAllZero = false;
+                        break;
+                   }
+                }
+                if(isAllZero) {
+                    Serial.printf("Zero packet, size %d\n", packet.size);
+                }
+                #endif
+                    
                 if(memcmp(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
                     setDisplay(&destinationTime, DT_BASE, 1);
                     newDataDT = true;

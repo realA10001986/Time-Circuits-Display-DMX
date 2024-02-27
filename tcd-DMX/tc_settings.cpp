@@ -44,8 +44,8 @@
 #define DECLARE_D_JSON(x,n) DynamicJsonDocument n(x);
 #endif 
 
-static const char *fwfn = "tcdfw.bin";     //"/tcd-DMX.ino.nodemcu-32s.bin";
-static const char *fwfnold = "tcdfw.old";  //"/tcd-DMX.ino.nodemcu-32s.old";
+static const char *fwfn = "/tcdfw.bin";     //"/tcd-DMX.ino.nodemcu-32s.bin";
+static const char *fwfnold = "/tcdfw.old";  //"/tcd-DMX.ino.nodemcu-32s.old";
 
 static const char *fsNoAvail = "File System not available";
 static const char *failFileWrite = "Failed to open file for writing";
