@@ -15,25 +15,11 @@
 
 // These must not contain any characters other than
 // '0'-'9', 'A'-'Z', '(', ')', '.', '_', '-' or space
-#define TC_VERSION "V0.05"
-#define TC_VERSION_EXTRA "FEB272024"
+#define TC_VERSION "V0.08"
+#define TC_VERSION_EXTRA "FEB282024"
 
 
 #define TC_DBG              // debug output on Serial
-
-
-/*************************************************************************
- ***                  esp32-arduino version detection                  ***
- *************************************************************************/
-
-#if defined __has_include && __has_include(<esp_arduino_version.h>)
-#include <esp_arduino_version.h>
-#ifdef ESP_ARDUINO_VERSION_MAJOR
-    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2,0,8)
-    #define HAVE_GETNEXTFILENAME
-    #endif
-#endif
-#endif
 
 /*************************************************************************
  ***                             GPIO pins                             ***

@@ -49,10 +49,12 @@ dmx_packet_t packet;
 
 uint8_t data[DMX_PACKET_SIZE];
 
-#define DMX_ADDRESS 1
+#define DMX_ADDRESS               1
 #define DMX_CHANNELS_PER_DISPLAY 11
 
-#define DMX_SLOTS_TO_RECEIVE (DMX_ADDRESS + (3*DMX_CHANNELS_PER_DISPLAY))
+#define DMX_CHANNELS (3 * DMX_CHANNELS_PER_DISPLAY)
+
+#define DMX_SLOTS_TO_RECEIVE (DMX_ADDRESS + DMX_CHANNELS)
 
 uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
@@ -208,11 +210,12 @@ void dmx_setup()
       .queue_size_max = 32
     };
     dmx_personality_t personalities[] = {
-        {3*DMX_CHANNELS_PER_DISPLAY, "TCD Personality"}
+        {DMX_CHANNELS, "TCD Personality"}
     };
     int personality_count = 1;
 
     Serial.println(F("Time Circuits Display DMX version " TC_VERSION " " TC_VERSION_EXTRA));
+    Serial.println(F("(C) 2024 Thomas Winischhofer (A10001986)"));
 
     // Pin for monitoring seconds from RTC
     pinMode(SECONDS_IN_PIN, INPUT_PULLDOWN);
@@ -243,11 +246,6 @@ void dmx_setup()
  *
  *********************************************************************************/
 
-#ifdef TCD_DBG
-int cnt = 0;
-#define SID_BASE 34
-#endif
-
 void dmx_loop() 
 {
     bool newDataDT = false;
@@ -273,7 +271,7 @@ void dmx_loop()
             if(!data[0]) {
 
                 #ifdef TCD_DBG
-                for(int i = DMX_ADDRESS; i < DMX_ADDRESS+(3*DMX_CHANNELS_PER_DISPLAY); i++) {
+                for(int i = DMX_ADDRESS; i < DMX_ADDRESS+DMX_CHANNELS; i++) {
                    if(data[i]) {
                         isAllZero = false;
                         break;
@@ -299,13 +297,16 @@ void dmx_loop()
                     newDataLT = true;
                     memcpy(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY);
                 }
+
             } else {
+              
                 Serial.printf("Unrecognized start code %d (0x%02x)", data[0], data[0]);
+                
             }
           
         } else {
             
-            Serial.println("A DMX error occurred");
+            Serial.printf("DMX error: %d\n", packet.err);
             
         }
         
@@ -363,35 +364,6 @@ void dmx_loop()
  *
  *********************************************************************************/
 
-static bool isLeapYear(int year)
-{
-    if((year & 3) == 0) { 
-        if((year % 100) == 0) {
-            if((year % 400) == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return true;
-        }
-    } else {
-        return false;
-    }
-}
-
-/* 
- * Find number of days in a month 
- */
-int daysInMonth(int month, int year)
-{
-    if(month == 2 && isLeapYear(year)) {
-        return 29;
-    }
-    return monthDays[month - 1];
-}
-
-
 /*
  * 0 = ch1  - Sets the month
  * 1 = ch2  - Sets the day
@@ -401,14 +373,13 @@ int daysInMonth(int month, int year)
  * 5 = ch6  - Sets 1’s digit for year
  * 6 = ch7  - Sets Hour 1-12
  * 7 = ch8  - Sets Minute 00-59
- * 8 = ch9  - Sets AM/PM (0 = AM, 1 = PM)     (fs: 0-127=AM, 128-255=PM)
- * 9 = ch10 - colon (0-85=off; 86-170=on; >171 blink) 
+ * 8 = ch9  - Sets AM/PM (0-127=AM, 128-255=PM)
+ * 9 = ch10 - colon      (0-85=off; 86-170=on; >=171 blink) 
  * 10 = ch11 - Master Intensity (0-255)
  * 
  * Keypad LEDs are off if all displays' Intensity is 0
  * otherwise on
  */
-
 
 static void setDisplay(clockDisplay *display, int base, int kpbit)
 {

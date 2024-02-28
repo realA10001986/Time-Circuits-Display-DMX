@@ -22,6 +22,4 @@ void dmx_boot();
 void dmx_setup();
 void dmx_loop();
 
-int  daysInMonth(int month, int year);
-
 #endif

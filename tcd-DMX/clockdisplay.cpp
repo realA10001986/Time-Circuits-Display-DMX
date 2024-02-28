@@ -84,24 +84,6 @@ void clockDisplay::onBlink(uint8_t blink)
     directCmd(0x80 | 1 | ((blink & 0x03) << 1)); 
 }
 
-// Turn on all LEDs
-// Not for use in normal operation
-// Red displays apparently draw more power
-// and might remain dark after repeatedly
-// calling this.
-#if 0
-void clockDisplay::realLampTest()
-{
-    Wire.beginTransmission(_address);
-    Wire.write(0x00);  // start address
-
-    for(int i = 0; i < CD_BUF_SIZE*2; i++) {
-        Wire.write(0xff);
-    }
-    Wire.endTransmission();
-}
-#endif
-
 // Turn on some LEDs
 // Used for effects and brightness keypad menu
 void clockDisplay::lampTest(bool randomize)
