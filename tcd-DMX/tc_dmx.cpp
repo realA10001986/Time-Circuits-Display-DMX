@@ -281,7 +281,7 @@ void dmx_loop()
                     Serial.printf("Zero packet, size %d\n", packet.size);
                 }
                 #endif
-                    
+
                 if(memcmp(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
                     setDisplay(&destinationTime, DT_BASE, 1);
                     newDataDT = true;
@@ -385,6 +385,13 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
 {
       int mbri;
 
+      #ifdef TC_DBG
+      for(int i = 0; i < 11; i++) {
+          Serial.printf("%02x ", data[base + i]);
+      }
+      Serial.println(" ");
+      #endif
+
       display->setMonth(monthRanges[data[base + 0]]);
 
       display->setDay(data[base + 1] / 8);
@@ -410,7 +417,7 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
           display->colonBlink = true;
       }
 
-      mbri = data[base + 10] /= 15; // Brightness
+      mbri = data[base + 10] / 15; // Brightness
       if(mbri > 16) mbri = 16;
 
       if(mbri) {
