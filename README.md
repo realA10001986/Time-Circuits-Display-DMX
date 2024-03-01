@@ -1,5 +1,5 @@
 
-# **Not for public release**
+# **&#9888; Not for public release**
 
 Requires "esp_dmx" library (someweisguy) v4.0.1
 (Ignore compiler warnings)
