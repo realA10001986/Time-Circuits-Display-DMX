@@ -82,4 +82,6 @@ The required 3.3V are generated through a voltage converter (like [this](https:/
 
 ![voltage converter](https://github.com/realA10001986/TCD-DMX/assets/76924199/d7e42eff-1782-41a6-b751-f22e25e6e564)
 
+GND is taken from J1 P4, 5V from J2 P3. The 3.3V output is on J1 P2.
+
 
