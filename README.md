@@ -19,7 +19,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>8</td><td>Destination Time: Minute</td></tr>
     <tr><td>9</td><td>Destination Time: AM/PM</td></tr>
     <tr><td>10</td><td>Destination Time: Colon (0-85=off; 86-170=on; 171-255=blink</td></tr>
-    <tr><td>11</td><td>Destination Time: Brightness (0=off; 1=darkest, 255=brightest)</td></tr>
+    <tr><td>11</td><td>Destination Time: Brightness</td></tr>
     <tr><td>12</td><td>Present Time: Month</td></tr>
     <tr><td>13</td><td>Present Time: Day</td></tr>
     <tr><td>14</td><td>Present Time: Year 1000s</td></tr>
@@ -30,7 +30,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>19</td><td>Present Time: Minute</td></tr>
     <tr><td>20</td><td>Present Time: AM/PM</td></tr>
     <tr><td>21</td><td>Present Time: Colon (0-85=off; 86-170=on; 171-255=blink</td></tr>
-    <tr><td>22</td><td>Present Time: Brightness (0=off; 1=darkest, 255=brightest)</td></tr>
+    <tr><td>22</td><td>Present Time: Brightness</td></tr>
     <tr><td>23</td><td>Last Time Departed: Month</td></tr>
     <tr><td>24</td><td>Last Time Departed: Day</td></tr>
     <tr><td>25</td><td>Last Time Departed: Year 1000s</td></tr>
@@ -41,7 +41,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>30</td><td>Last Time Departed: Minute</td></tr>
     <tr><td>31</td><td>Last Time Departed: AM/PM</td></tr>
     <tr><td>32</td><td>Last Time Departed: Colon (0-85=off; 86-170=on; 171-255=blink</td></tr>
-    <tr><td>33</td><td>Last Time Departed: Brightness (0=off; 1=darkest, 255=brightest)</td></tr>
+    <tr><td>33</td><td>Last Time Departed: Brightness</td></tr>
 </table>
 
 ### Build information
