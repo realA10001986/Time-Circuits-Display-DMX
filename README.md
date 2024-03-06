@@ -46,7 +46,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
 
 ### Build information
 
-Requires "esp_dmx" library (someweisguy) v4.0.1 or later.
+Requires [esp_dmx](https://github.com/someweisguy/esp_dmx) library v4.0.1 or later.
 
 ### Firmware update
 
