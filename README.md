@@ -50,7 +50,7 @@ Requires "esp_dmx" library (someweisguy) v4.0.1 or later.
 
 ### Firmware update
 
-To update the firmware without Arduino IDE/PlatformIO, copy a pre-compiled binary using the filename "tcdfw.bin" to a FAT32 formatted SD card, insert this card into the TCD, and power up. The TCD will display "UPDATING" and update the firmware. Afterwards it will reboot.
+To update the firmware without Arduino IDE/PlatformIO, copy a pre-compiled binary (filename must be "tcdfw.bin") to a FAT32 formatted SD card, insert this card into the TCD, and power up. The TCD will display "UPDATING" and update the firmware. Afterwards it will reboot.
 
 ### Hardware: Pin mapping
 
