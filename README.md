@@ -12,7 +12,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>1</td><td>Destination Time: Month</td></tr>
     <tr><td>2</td><td>Destination Time: Day</td></tr>
     <tr><td>3</td><td>Destination Time: Year 1000s</td></tr>
-    <tr><td>4</td><td>Destination Time: Year 100s/td></tr>
+    <tr><td>4</td><td>Destination Time: Year 100s</td></tr>
     <tr><td>5</td><td>Destination Time: Year 10s</td></tr>
     <tr><td>6</td><td>Destination Time: Year 1s</td></tr>
     <tr><td>7</td><td>Destination Time: Hour</td></tr>
@@ -23,7 +23,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>12</td><td>Present Time: Month</td></tr>
     <tr><td>13</td><td>Present Time: Day</td></tr>
     <tr><td>14</td><td>Present Time: Year 1000s</td></tr>
-    <tr><td>15</td><td>Present Time: Year 100s/td></tr>
+    <tr><td>15</td><td>Present Time: Year 100s</td></tr>
     <tr><td>16</td><td>Present Time: Year 10s</td></tr>
     <tr><td>17</td><td>Present Time: Year 1s</td></tr>
     <tr><td>18</td><td>Present Time: Hour</td></tr>
@@ -34,7 +34,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>23</td><td>Last Time Departed: Month</td></tr>
     <tr><td>24</td><td>Last Time Departed: Day</td></tr>
     <tr><td>25</td><td>Last Time Departed: Year 1000s</td></tr>
-    <tr><td>26</td><td>Last Time Departed: Year 100s/td></tr>
+    <tr><td>26</td><td>Last Time Departed: Year 100s</td></tr>
     <tr><td>27</td><td>Last Time Departed: Year 10s</td></tr>
     <tr><td>28</td><td>Last Time Departed: Year 1s</td></tr>
     <tr><td>29</td><td>Last Time Departed: Hour</td></tr>
