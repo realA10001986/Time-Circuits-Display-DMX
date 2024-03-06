@@ -76,6 +76,8 @@ To update the firmware without Arduino IDE/PlatformIO, copy a pre-compiled binar
     </tr>
 </table>
 
+![DMXshield](https://github.com/realA10001986/Time-Circuits-Display-DMX/assets/76924199/4bfaf9ed-08e4-4901-805e-a25611bbe694)
+
 The required 3.3V are generated through a voltage converter (like [this](https://www.amazon.com/dp/B09Q8Q3ZVM) one) attached to the LCD-to-DMX shield:
 
 ![voltage converter](https://github.com/realA10001986/TCD-DMX/assets/76924199/d7e42eff-1782-41a6-b751-f22e25e6e564)
