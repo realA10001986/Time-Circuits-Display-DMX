@@ -44,6 +44,8 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>33</td><td>Last Time Departed: Brightness</td></tr>
 </table>
 
+If DMX_USE_VERIFY is defined in the source code (which it is by default), a DMX packet verfifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored.
+
 ### Build information
 
 Requires [esp_dmx](https://github.com/someweisguy/esp_dmx) library v4.0.1 or later.
