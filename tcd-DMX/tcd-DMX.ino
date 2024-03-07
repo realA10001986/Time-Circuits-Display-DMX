@@ -64,13 +64,11 @@
  *
  */
 
-
 #include "tc_global.h"
 
 #include <Arduino.h>
 #include <Wire.h>
 
-//#include "tc_keypad.h"
 #include "tc_settings.h"
 #include "tc_dmx.h"
 
@@ -89,10 +87,8 @@ void setup()
 
     dmx_boot();
     settings_setup();
-    //keypad_setup();
     dmx_setup();
 }
-
 
 void loop()
 {

@@ -54,7 +54,14 @@ uint8_t data[DMX_PACKET_SIZE];
 
 #define DMX_CHANNELS (3 * DMX_CHANNELS_PER_DISPLAY)
 
+#define DMX_VERIFY_CHANNEL 46    // must be set to DMX_VERIFY_VALUE
+#define DMX_VERIFY_VALUE   100  
+
+#if defined(DMX_USE_VERIFY) && (DMX_ADDRESS < DMX_VERIFY_CHANNEL)
+#define DMX_SLOTS_TO_RECEIVE (DMX_VERIFY_CHANNEL + 1)
+#else
 #define DMX_SLOTS_TO_RECEIVE (DMX_ADDRESS + DMX_CHANNELS)
+#endif
 
 uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
@@ -251,9 +258,6 @@ void dmx_loop()
     bool newDataDT = false;
     bool newDataPT = false;
     bool newDataLT = false;
-    #ifdef TCD_DBG
-    bool isAllZero = true;
-    #endif
     
     if(dmx_receive_num(dmxPort, &packet, DMX_SLOTS_TO_RECEIVE, 0)) {
         
@@ -270,33 +274,34 @@ void dmx_loop()
       
             if(!data[0]) {
 
-                #ifdef TCD_DBG
-                for(int i = DMX_ADDRESS; i < DMX_ADDRESS+DMX_CHANNELS; i++) {
-                   if(data[i]) {
-                        isAllZero = false;
-                        break;
-                   }
-                }
-                if(isAllZero) {
-                    Serial.printf("Zero packet, size %d\n", packet.size);
+                #ifdef DMX_USE_VERIFY
+                if(data[DMX_VERIFY_CHANNEL] == DMX_VERIFY_VALUE) {
+                #endif
+    
+                    if(memcmp(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                        setDisplay(&destinationTime, DT_BASE, 1);
+                        newDataDT = true;
+                        memcpy(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                    }
+                    if(memcmp(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                        setDisplay(&presentTime, PT_BASE, 2);
+                        newDataPT = true;
+                        memcpy(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                    }
+                    if(memcmp(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
+                        setDisplay(&departedTime, LT_BASE, 4);
+                        newDataLT = true;
+                        memcpy(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY);
+                    }
+
+                #ifdef DMX_USE_VERIFY
+                } else {
+
+                    Serial.printf("Bad verification value on channel %d: %d (should be %d)\n", 
+                          DMX_VERIFY_CHANNEL, data[DMX_VERIFY_CHANNEL], DMX_VERIFY_VALUE);
+                  
                 }
                 #endif
-
-                if(memcmp(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
-                    setDisplay(&destinationTime, DT_BASE, 1);
-                    newDataDT = true;
-                    memcpy(cachedt, data + DT_BASE, DMX_CHANNELS_PER_DISPLAY);
-                }
-                if(memcmp(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
-                    setDisplay(&presentTime, PT_BASE, 2);
-                    newDataPT = true;
-                    memcpy(cachept, data + PT_BASE, DMX_CHANNELS_PER_DISPLAY);
-                }
-                if(memcmp(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY)) {
-                    setDisplay(&departedTime, LT_BASE, 4);
-                    newDataLT = true;
-                    memcpy(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY);
-                }
 
             } else {
               
@@ -403,9 +408,15 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
       
       display->setMinute(minRanges[data[base + 7]]);
 
+      #if 0
+      if(data[base + 8] <= 85)        display->setAMPM(-1); // off
+      else if(data[base + 8] <= 170)  display->setAMPM(1);  // PM  
+      else                            display->setAMPM(0);  // AM
+      #else
       if(data[base + 8] <= 127) display->setAMPM(1);  // PM
       else                      display->setAMPM(0);  // AM  
       // no off?                display->setAMPM(-1); // off
+      #endif
 
       if(data[base + 9] <= 85) {
           display->setColon(false);
@@ -417,11 +428,11 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
           display->colonBlink = true;
       }
 
-      mbri = data[base + 10] / 15; // Brightness
-      if(mbri > 16) mbri = 16;
+      mbri = data[base + 10];   // Brightness: 0=off; 1-255:darkest->brightest
 
       if(mbri) {
-          display->setBrightness(mbri - 1);
+          mbri /= 16; 
+          display->setBrightness(mbri);
           display->isOn = true;     // off immediately, on after show in loop()
           kpleds |= kpbit;
       } else {

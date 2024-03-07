@@ -41,9 +41,6 @@ class clockDisplay {
         void onCond();
         void off();
         void onBlink(uint8_t blink);
-        #if 0
-        void realLampTest();
-        #endif
         void lampTest(bool randomize = false);
 
         void clearBuf();

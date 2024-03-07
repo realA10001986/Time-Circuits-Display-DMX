@@ -9,7 +9,6 @@
 #ifndef _TC_FONT_H
 #define _TC_FONT_H
 
-#ifndef IS_ACAR_DISPLAY
 static const uint16_t alphaChars[127-31-1] = {
     0b0000000000000000,  // <space>
     0b0000000000000110,  // !
@@ -107,7 +106,6 @@ static const uint16_t alphaChars[127-31-1] = {
     0b0010010010001001,  // }
     0b0000000011100011   // ~ displayed as '°' (encoded as ~) [was: 0b0000010100100000]
 };
-#endif
 
 static const uint8_t numDigs[127-31-1+2] = {
     0b00000000, // space

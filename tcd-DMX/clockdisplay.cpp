@@ -15,13 +15,8 @@
 #include "tc_font.h"
 
 #define CD_MONTH_POS  0
-#ifdef IS_ACAR_DISPLAY      // A-Car (2-digit-month) ---------------------
-#define CD_MONTH_SIZE 1     //      number of words
-#define CD_MONTH_DIGS 2     //      number of digits/letters
-#else                       // All others (3-char month) -----------------
 #define CD_MONTH_SIZE 3     //      number of words
 #define CD_MONTH_DIGS 3     //      number of digits/letters
-#endif                      // -------------------------------------------
 #define CD_DAY_POS    3
 #define CD_YEAR_POS   4
 #define CD_HOUR_POS   6
@@ -406,9 +401,6 @@ void clockDisplay::showMonthDirect(int monthNum, uint16_t dflags)
     if(monthNum > 12)
         monthNum = 12;
 
-#ifdef IS_ACAR_DISPLAY
-    directCol(CD_MONTH_POS, makeNum(monthNum, dflags));
-#else
     if(monthNum > 0) {
         monthNum--;
         directCol(CD_MONTH_POS,     getLEDAlphaChar(months[monthNum][0]));
@@ -419,7 +411,6 @@ void clockDisplay::showMonthDirect(int monthNum, uint16_t dflags)
         directCol(CD_MONTH_POS + 1, 0);
         directCol(CD_MONTH_POS + 2, getLEDAlphaChar('_'));
     }
-#endif
 }
 
 void clockDisplay::showDayDirect(int dayNum, uint16_t dflags)
@@ -495,19 +486,9 @@ void clockDisplay::showTextDirect(const char *text, uint16_t flags)
     _corr6 = (flags & CDT_CORR6) ? true : false;
     _withColon = (flags & CDT_COLON) ? true : false;
 
-#ifdef IS_ACAR_DISPLAY
-    while(text[idx] && pos < (CD_MONTH_POS+CD_MONTH_SIZE)) {
-        temp = getLED7AlphaChar(text[idx++]);
-        if(text[idx]) {
-            temp |= (getLED7AlphaChar(text[idx++]) << 8);
-        }
-        directCol(pos++, temp);
-    }
-#else
     while(text[idx] && pos < (CD_MONTH_POS+CD_MONTH_SIZE)) {
         directCol(pos++, getLEDAlphaChar(text[idx++]));
     }
-#endif
 
     while(pos < CD_DAY_POS) {
         directCol(pos++, 0);
@@ -563,7 +544,6 @@ uint8_t clockDisplay::getLED7AlphaChar(uint8_t value)
 }
 
 // Returns bit pattern for provided character for display on 14 segment display
-#ifndef IS_ACAR_DISPLAY
 uint16_t clockDisplay::getLEDAlphaChar(uint8_t value)
 {
     if(value < 32 || value >= 127)
@@ -575,7 +555,6 @@ uint16_t clockDisplay::getLEDAlphaChar(uint8_t value)
 
     return alphaChars[value - 32];
 }
-#endif
 
 // Make a 2 digit number from the array and return the segment data
 // (makes leading 0s)
