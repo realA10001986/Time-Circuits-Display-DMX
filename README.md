@@ -44,7 +44,7 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>33</td><td>Last Time Departed: Brightness (0=off; 1-255=darkest-brightest)</td></tr>
 </table>
 
-If DMX_USE_VERIFY is defined in the source code (which it is by default), a DMX packet verfifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored.
+If DMX_USE_VERIFY is defined in tcd_global.h (which it is by default), a DMX packet verfifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored.
 
 ### Build information
 
