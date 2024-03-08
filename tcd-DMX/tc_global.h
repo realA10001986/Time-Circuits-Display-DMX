@@ -18,7 +18,7 @@
 #define TC_VERSION "V0.09"
 #define TC_VERSION_EXTRA "MAR072024"
 
-#define TC_DBG              // debug output on Serial
+//#define TC_DBG              // debug output on Serial
 
 // If this is uncommented, the firmware uses channel DMX_VERIFY_CHANNEL
 // for packet verification. The value of this channel must, at all times,
