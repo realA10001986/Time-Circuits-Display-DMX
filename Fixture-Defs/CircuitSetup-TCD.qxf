@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FixtureDefinition>
+<FixtureDefinition xmlns="http://www.qlcplus.org/FixtureDefinition">
+ <Creator>
+  <Name>Q Light Controller Plus</Name>
+  <Version>4.12.7</Version>
+  <Author>Thomas Winischhofer</Author>
+ </Creator>
+ <Manufacturer>CircuitSetup</Manufacturer>
+ <Model>TCD</Model>
+ <Type>Other</Type>
+ <Channel Name="DT-Month">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">Month</Capability>
+ </Channel>
+ <Channel Name="DT-Day">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255"></Capability>
+ </Channel>
+ <Channel Name="DT-Y1000">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Yeat 1000</Capability>
+ </Channel>
+ <Channel Name="DT-Y100">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Yeat 100</Capability>
+ </Channel>
+ <Channel Name="DT-Y10">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Yeat 10</Capability>
+ </Channel>
+ <Channel Name="DT-Y1">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Yeat 1</Capability>
+ </Channel>
+ <Channel Name="DT-Hour">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Hour</Capability>
+ </Channel>
+ <Channel Name="DT-Min">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-Minute</Capability>
+ </Channel>
+ <Channel Name="DT-AMPM">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">DT-AMPM</Capability>
+ </Channel>
+ <Channel Name="DT-Intensity">
+  <Group Byte="1">Intensity</Group>
+  <Capability Min="0" Max="255">DT-Intensity</Capability>
+ </Channel>
+ <Channel Name="PT-Month">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">Month</Capability>
+ </Channel>
+ <Channel Name="PT-Day">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255"></Capability>
+ </Channel>
+ <Channel Name="PT-Y1000">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Year 1000</Capability>
+ </Channel>
+ <Channel Name="PT-Y100">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Year 100</Capability>
+ </Channel>
+ <Channel Name="PT-Y10">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Year 10</Capability>
+ </Channel>
+ <Channel Name="PT-Y1">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Year 1</Capability>
+ </Channel>
+ <Channel Name="PT-Hour">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Hour</Capability>
+ </Channel>
+ <Channel Name="PT-Min">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-Minute</Capability>
+ </Channel>
+ <Channel Name="PT-AMPM">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">PT-AMPM</Capability>
+ </Channel>
+ <Channel Name="PT-Intensity">
+  <Group Byte="1">Intensity</Group>
+  <Capability Min="0" Max="255">PT-Intensity</Capability>
+ </Channel>
+ <Channel Name="LT-Month">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Month</Capability>
+ </Channel>
+ <Channel Name="LT-Day">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Day</Capability>
+ </Channel>
+ <Channel Name="LT-Y1000">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Year 1000</Capability>
+ </Channel>
+ <Channel Name="LT-Y100">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Year 100</Capability>
+ </Channel>
+ <Channel Name="LT-Y10">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Year 10</Capability>
+ </Channel>
+ <Channel Name="LT-Y1">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Year 1</Capability>
+ </Channel>
+ <Channel Name="LT-Hour">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Hour</Capability>
+ </Channel>
+ <Channel Name="LT-Min">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-Minute</Capability>
+ </Channel>
+ <Channel Name="LT-AMPM">
+  <Group Byte="1">Effect</Group>
+  <Capability Min="0" Max="255">LT-AMPM</Capability>
+ </Channel>
+ <Channel Name="LT-Intensity">
+  <Group Byte="1">Intensity</Group>
+  <Capability Min="0" Max="255">LT-Intensity</Capability>
+ </Channel>
+ <Channel Name="DT-Colon">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">DT-Colon</Capability>
+ </Channel>
+ <Channel Name="PT-Colon">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">PT-Colon</Capability>
+ </Channel>
+ <Channel Name="LT-Colon">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">LT-Colon</Capability>
+ </Channel>
+ <Mode Name="Standard mode">
+  <Channel Number="0">DT-Month</Channel>
+  <Channel Number="1">DT-Day</Channel>
+  <Channel Number="2">DT-Y1000</Channel>
+  <Channel Number="3">DT-Y100</Channel>
+  <Channel Number="4">DT-Y10</Channel>
+  <Channel Number="5">DT-Y1</Channel>
+  <Channel Number="6">DT-Hour</Channel>
+  <Channel Number="7">DT-Min</Channel>
+  <Channel Number="8">DT-AMPM</Channel>
+  <Channel Number="9">DT-Colon</Channel>
+  <Channel Number="10">DT-Intensity</Channel>
+  <Channel Number="11">PT-Month</Channel>
+  <Channel Number="12">PT-Day</Channel>
+  <Channel Number="13">PT-Y1000</Channel>
+  <Channel Number="14">PT-Y100</Channel>
+  <Channel Number="15">PT-Y10</Channel>
+  <Channel Number="16">PT-Y1</Channel>
+  <Channel Number="17">PT-Hour</Channel>
+  <Channel Number="18">PT-Min</Channel>
+  <Channel Number="19">PT-AMPM</Channel>
+  <Channel Number="20">PT-Colon</Channel>
+  <Channel Number="21">PT-Intensity</Channel>
+  <Channel Number="22">LT-Month</Channel>
+  <Channel Number="23">LT-Day</Channel>
+  <Channel Number="24">LT-Y1000</Channel>
+  <Channel Number="25">LT-Y100</Channel>
+  <Channel Number="26">LT-Y10</Channel>
+  <Channel Number="27">LT-Y1</Channel>
+  <Channel Number="28">LT-Hour</Channel>
+  <Channel Number="29">LT-Min</Channel>
+  <Channel Number="30">LT-AMPM</Channel>
+  <Channel Number="31">LT-Colon</Channel>
+  <Channel Number="32">LT-Intensity</Channel>
+ </Mode>
+ <Physical>
+  <Bulb Type="LED" Lumens="0" ColourTemperature="0"/>
+  <Dimensions Weight="0" Width="0" Height="0" Depth="0"/>
+  <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>
+  <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+  <Technical PowerConsumption="5" DmxConnector="3-pin"/>
+ </Physical>
+</FixtureDefinition>
