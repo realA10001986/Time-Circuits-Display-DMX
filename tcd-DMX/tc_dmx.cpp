@@ -12,10 +12,15 @@
 #include <esp_dmx.h>
 
 #include "tc_dmx.h"
+#ifdef TC_HAVESPEEDO
+#include "speeddisplay.h"
+#endif
 
 #define DEST_TIME_ADDR 0x71 // TC displays
 #define PRES_TIME_ADDR 0x72
 #define DEPT_TIME_ADDR 0x74
+
+#define SPEEDO_ADDR    0x70 // speedo display
 
 #define DS3231_ADDR    0x68 // DS3231 RTC
 #define PCF2129_ADDR   0x51 // PCF2129 RTC
@@ -24,6 +29,10 @@
 clockDisplay destinationTime(DISP_DEST, DEST_TIME_ADDR);
 clockDisplay presentTime(DISP_PRES, PRES_TIME_ADDR);
 clockDisplay departedTime(DISP_LAST, DEPT_TIME_ADDR);
+
+#ifdef TC_HAVESPEEDO
+speedDisplay speedo(SPEEDO_ADDR);
+#endif
 
 // The RTC object
 tcRTC rtc(2, (uint8_t[2*2]){ PCF2129_ADDR, RTCT_PCF2129, 
@@ -57,20 +66,35 @@ uint8_t data[DMX_PACKET_SIZE];
 #define DMX_VERIFY_CHANNEL 46    // must be set to DMX_VERIFY_VALUE
 #define DMX_VERIFY_VALUE   100  
 
+#define DMX_SPEEDO_CHANNEL  57
+#define DMX_SPEEDO_CHANNELS 2
+
 #if defined(DMX_USE_VERIFY) && (DMX_ADDRESS < DMX_VERIFY_CHANNEL)
 #define DMX_SLOTS_TO_RECEIVE (DMX_VERIFY_CHANNEL + 1)
 #else
 #define DMX_SLOTS_TO_RECEIVE (DMX_ADDRESS + DMX_CHANNELS)
 #endif
 
+#ifdef TC_HAVESPEEDO
+#if DMX_SLOTS_TO_RECEIVE < (DMX_SPEEDO_CHANNEL + DMX_SPEEDO_CHANNELS)
+#undef DMX_SLOTS_TO_RECEIVE
+#define DMX_SLOTS_TO_RECEIVE (DMX_SPEEDO_CHANNEL + DMX_SPEEDO_CHANNELS)
+#endif
+#endif
+
 uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachelt[DMX_CHANNELS_PER_DISPLAY];
+#ifdef TC_HAVESPEEDO
+uint8_t cachesp[DMX_SPEEDO_CHANNELS];
+#endif
 
 // DMX addresses for the displays
 #define DT_BASE DMX_ADDRESS
 #define PT_BASE (DT_BASE+DMX_CHANNELS_PER_DISPLAY)
 #define LT_BASE (PT_BASE+DMX_CHANNELS_PER_DISPLAY)
+
+#define SP_BASE DMX_SPEEDO_CHANNEL
 
 static const uint8_t monthRanges[256] = {
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -148,9 +172,15 @@ static bool          y = false;
 
 static int           kpleds = 0;
 
+#ifdef TC_HAVESPEEDO
+static bool useSpeedo = true;
+#endif
+
 // Forward declarations
 static void setDisplay(clockDisplay *display, int base, int kpbit);
-
+#ifdef TC_HAVESPEEDO
+static void setSpeedoDisplay(speedDisplay *display, int base);
+#endif
 
 static void startDisplays()
 {
@@ -164,6 +194,12 @@ static void invalidateCache()
     for(int i = 0; i < DMX_CHANNELS_PER_DISPLAY; i++) {
         cachedt[i] = cachept[i] = cachelt[i] = rand() % 255;
     }
+
+    #ifdef TC_HAVESPEEDO
+    for(int i = 0; i < DMX_SPEEDO_CHANNELS; i++) {
+        cachesp[i] = rand() % 255;
+    }
+    #endif
 }
 
 
@@ -193,6 +229,17 @@ void dmx_boot()
     // Init white LED, keep it off
     pinMode(WHITE_LED_PIN, OUTPUT);
     digitalWrite(WHITE_LED_PIN, LOW);
+
+    #ifdef TC_HAVESPEEDO
+    if(!speedo.begin(TC_SPEEDO_TYPE)) {
+        useSpeedo = false;
+        #ifdef TC_DBG
+        Serial.println("Speedo not found");
+        #endif
+    } else {
+        speedo.setDot(true);
+    }
+    #endif
 }    
 
 
@@ -293,6 +340,15 @@ void dmx_loop()
                         newDataLT = true;
                         memcpy(cachelt, data + LT_BASE, DMX_CHANNELS_PER_DISPLAY);
                     }
+
+                    #ifdef TC_HAVESPEEDO
+                    if(useSpeedo) {
+                        if(memcmp(cachesp, data + SP_BASE, DMX_SPEEDO_CHANNELS)) {
+                            setSpeedoDisplay(&speedo, SP_BASE);
+                            memcpy(cachesp, data + SP_BASE, DMX_SPEEDO_CHANNELS);
+                        }
+                    }
+                    #endif
 
                 #ifdef DMX_USE_VERIFY
                 } else {
@@ -441,3 +497,24 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
           kpleds &= ~kpbit;
       }
 }
+
+/*
+ * Speedo fixture:
+ * 0 = ch1 - Sets the speed
+ * 1 = ch2 - Master Intensity (0-255)
+ */
+#ifdef TC_HAVESPEEDO
+static void setSpeedoDisplay(speedDisplay *display, int base)
+{
+      int mbri = data[base + 1];   // Brightness: 0=off; 1-255:darkest->brightest
+
+      if(mbri) {
+          display->setSpeed((int8_t)((float)data[base] / 2.87));
+          display->show();
+          display->setBrightness(mbri / 16);
+          display->on();
+      } else {
+          display->off();
+      }
+}
+#endif
