@@ -25,7 +25,7 @@
 // be DMX_VERIFY_VALUE for a packet to be accepted.
 //#define DMX_USE_VERIFY
 
-#define TC_HAVESPEEDO
+//#define TC_HAVESPEEDO
 #define TC_SPEEDO_TYPE 11 //0
 
 /*************************************************************************
