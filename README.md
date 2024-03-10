@@ -44,7 +44,15 @@ This repository holds a firmware for CircuitSetup's Time Circuits Display kit wh
     <tr><td>33</td><td>Last Time Departed: Brightness (0=off; 1-255=darkest-brightest)</td></tr>
 </table>
 
-If DMX_USE_VERIFY is defined in tcd_global.h (which it is by default), a DMX packet verifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored.
+If speedo support is enabled (by defining TC_HAVESPEEDO in tcd_global.h), additional channels are supported:
+
+<table>
+    <tr><td>DMX channel</td><td>Function</td></tr>
+    <tr><td>57</td><td>Speedo: Speed (0-255 = 0-88mph)</td></tr>
+    <tr><td>58</td><td>Speedo: Brightness (0-255)</td></tr>
+</table>
+
+If DMX_USE_VERIFY is defined in tcd_global.h, a DMX packet verifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored. This feeature is disabled by default, because it hinders a global black out - unless your DMX controller can exclude channels from global black out.)
 
 ### Build information
 
