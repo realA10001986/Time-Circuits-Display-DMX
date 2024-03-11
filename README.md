@@ -52,7 +52,7 @@ If speedo support is enabled (by defining TC_HAVESPEEDO in tcd_global.h), additi
     <tr><td>58</td><td>Speedo: Brightness (0-255)</td></tr>
 </table>
 
-If DMX_USE_VERIFY is defined in tcd_global.h, a DMX packet verifier is implemented. Channel 46 must be at value 100, otherwise the DMX packet is ignored. This feature is disabled by default, because it hinders a global black out - unless your DMX controller can exclude channels from global black out.
+If DMX_USE_VERIFY is defined in tcd_global.h, a simple DMX packet verifier filters out malformed/corrupt DMX packets. For a packet to be considered valid, channel 46 must be at value 100. If this channel is set to any other value, the packet is ignored. This feature is disabled by default, because it hinders a global black out - unless your DMX controller can exclude channels from global black out.
 
 ### Build information
 
