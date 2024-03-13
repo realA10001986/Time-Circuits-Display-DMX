@@ -52,7 +52,13 @@ If speedo support is enabled (by defining TC_HAVESPEEDO in tcd_global.h), additi
     <tr><td>58</td><td>Speedo: Brightness (0-255)</td></tr>
 </table>
 
-If DMX_USE_VERIFY is defined in tcd_global.h, a simple DMX packet verifier filters out malformed/corrupt DMX packets. For a packet to be considered valid, channel 46 must be at value 100. If this channel is set to any other value, the packet is ignored. This feature is disabled by default, because it hinders a global black out. If your DMX controller can exclude channels from "black out" (or this function is not to be used), and you experience flicker, you can try to activate this packet verifier.
+#### Packet verification
+
+The DMX protocol uses no checksums. Therefore, transmission errors cannot be detected. Typically, such errors manifest themselves in flicker or a corrupted display for short moments. Since the TCD is no ordinary light fixture, this can be an issue.
+
+In order to at least filter out grossly malformed/corrupt DMX data packets, the firmware supports a simple DMX packet verifier: For a DMX data packet to be considered valid, _channel 46 must be at value 100_. If a packet contains any other value for this channel, the packet is ignored. 
+
+To enable this filter, DMX_USE_VERIFY must be #defined in tcd_global.h. This feature is disabled by default, because it hinders a global "black out". If your DMX controller can exclude channels from "black out" (or this function is not to be used), and you experience flicker, you can try to activate this packet verifier.
 
 ### Build information
 
