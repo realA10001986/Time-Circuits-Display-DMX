@@ -1,6 +1,4 @@
 
-**&#9888; Not for public release**
-
 # Firmware for Time Circuits Display - DMX controlled
 
 This repository holds a firmware for CircuitSetup's Time Circuits Display kit which allows to control each element through DMX. It is designed to work using the [Sparkfun LED-to-DMX](https://www.sparkfun.com/products/15110) shield.
