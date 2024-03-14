@@ -1,9 +1,9 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
+ * -------------------------------------------------------------------
  *
  * speedDisplay Class: Speedo Display
  *
@@ -17,26 +17,6 @@
  * 
  * The i2c slave address must be 0x70.
  * -------------------------------------------------------------------
- * License: MIT
- * 
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, 
- * merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to 
- * do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #ifndef _speedDisplay_H
@@ -59,25 +39,21 @@
 // The display's i2c slave address is 0x70 (defined in tc_time.h).
 //
 enum dispTypes : uint8_t {
-    SP_CIRCSETUP = 0, // Original CircuitSetup.us speedo
-    SP_ADAF_7x4,      // Adafruit 0.56" 4 digits, 7-segment (7x4) (ADA-878)
-    SP_ADAF_7x4L,     // " " " (left-aligned)
-    SP_ADAF_B7x4,     // Adafruit 1.2" 4 digits, 7-segment (7x4) (ADA-1270)
-    SP_ADAF_B7x4L,    // " " " (left-aligned)
-    SP_ADAF_14x4,     // Adafruit 0.56" 4 digits, 14-segment (14x4) (ADA-1911)
-    SP_ADAF_14x4L,    // " " " (left-aligned)
-    SP_GROVE_2DIG14,  // Grove 0.54" Dual Alphanumeric Display
-    SP_GROVE_4DIG14,  // Grove 0.54" Quad Alphanumeric Display
-    SP_GROVE_4DIG14L, // " " " (left aligned)
-    SP_ADAF1911_L,    // Like SP_ADAF_14x4L, but with only left hand side tube soldered on
-    SP_ADAF878L,      // Like SP_ADAF_7x4L, but only left 2 digits soldered on
-// ----- do not use the ones below ----
-    SP_TCD_TEST7,     // TimeCircuits Display 7 (for testing)
-    SP_TCD_TEST14,    // TimeCircuits Display 14 (for testing)
-    SP_TCD_TEST14L    // " " " (left-aligned)
+    SP_CIRCSETUP = 0, // 0:  Original CircuitSetup.us speedo
+    SP_ADAF_7x4,      // 1:  Adafruit 0.56" 4 digits, 7-segment (7x4) (ADA-878)
+    SP_ADAF_7x4L,     // 2:  " " " (left-aligned)
+    SP_ADAF_B7x4,     // 3:  Adafruit 1.2" 4 digits, 7-segment (7x4) (ADA-1270)
+    SP_ADAF_B7x4L,    // 4:  " " " (left-aligned)
+    SP_ADAF_14x4,     // 5:  Adafruit 0.56" 4 digits, 14-segment (14x4) (ADA-1911)
+    SP_ADAF_14x4L,    // 6:  " " " (left-aligned)
+    SP_GROVE_2DIG14,  // 7:  Grove 0.54" Dual Alphanumeric Display
+    SP_GROVE_4DIG14,  // 8:  Grove 0.54" Quad Alphanumeric Display
+    SP_GROVE_4DIG14L, // 9:  " " " (left aligned)
+    SP_ADAF1911_L,    // 10: Like SP_ADAF_14x4L, but with only left hand side tube soldered on
+    SP_ADAF878L,      // 11: Like SP_ADAF_7x4L, but only left 2 digits soldered on
 };
 
-// If new displays are added, SP_NUM_TYPES in global.h needs to be adapted.
+// If new displays are added, SP_NUM_TYPES needs to be adapted.
 
 class speedDisplay {
 
@@ -87,9 +63,6 @@ class speedDisplay {
         bool begin(int dispType);
         void on();
         void off();
-        #if 0
-        void lampTest();
-        #endif
 
         void clearBuf();
 
@@ -104,9 +77,6 @@ class speedDisplay {
 
         void setText(const char *text);
         void setSpeed(int8_t speedNum);
-        #ifdef TC_HAVETEMP
-        void setTemperature(float temp);
-        #endif
         void setDot(bool dot01 = true);
         void setColon(bool colon);
 
@@ -114,18 +84,11 @@ class speedDisplay {
         bool getDot();
         bool getColon();
 
-        #if 0
-        void showTextDirect(const char *text);
-        void setColonDirect(bool colon);
-        #endif
-
     private:
 
         void handleColon();
         uint16_t getLEDChar(uint8_t value);
-        #if 0
-        void directCol(int col, int segments);  // directly writes column RAM
-        #endif
+
         void clearDisplay();                    // clears display RAM
         void directCmd(uint8_t val);
 

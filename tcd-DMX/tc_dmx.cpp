@@ -30,6 +30,7 @@ clockDisplay destinationTime(DISP_DEST, DEST_TIME_ADDR);
 clockDisplay presentTime(DISP_PRES, PRES_TIME_ADDR);
 clockDisplay departedTime(DISP_LAST, DEPT_TIME_ADDR);
 
+// The speedo object
 #ifdef TC_HAVESPEEDO
 speedDisplay speedo(SPEEDO_ADDR);
 #endif
@@ -60,14 +61,13 @@ uint8_t data[DMX_PACKET_SIZE];
 
 #define DMX_ADDRESS               1
 #define DMX_CHANNELS_PER_DISPLAY 11
-
 #define DMX_CHANNELS (3 * DMX_CHANNELS_PER_DISPLAY)
 
-#define DMX_VERIFY_CHANNEL 46    // must be set to DMX_VERIFY_VALUE
-#define DMX_VERIFY_VALUE   100  
+#define DMX_SPEEDO_CHANNEL       57
+#define DMX_SPEEDO_CHANNELS       2
 
-#define DMX_SPEEDO_CHANNEL  57
-#define DMX_SPEEDO_CHANNELS 2
+#define DMX_VERIFY_CHANNEL       46    // must be set to DMX_VERIFY_VALUE
+#define DMX_VERIFY_VALUE        100  
 
 #if defined(DMX_USE_VERIFY) && (DMX_ADDRESS < DMX_VERIFY_CHANNEL)
 #define DMX_SLOTS_TO_RECEIVE (DMX_VERIFY_CHANNEL + 1)
@@ -76,11 +76,10 @@ uint8_t data[DMX_PACKET_SIZE];
 #endif
 
 #ifdef TC_HAVESPEEDO
-#if DMX_SLOTS_TO_RECEIVE < (DMX_SPEEDO_CHANNEL + DMX_SPEEDO_CHANNELS)
-#undef DMX_SLOTS_TO_RECEIVE
-#define DMX_SLOTS_TO_RECEIVE (DMX_SPEEDO_CHANNEL + DMX_SPEEDO_CHANNELS)
+#define DMX_SLOTS_TO_RECEIVE_SP (DMX_SPEEDO_CHANNEL + DMX_SPEEDO_CHANNELS)
 #endif
-#endif
+
+int dmx_slots_to_receive = DMX_SLOTS_TO_RECEIVE;
 
 uint8_t cachedt[DMX_CHANNELS_PER_DISPLAY];
 uint8_t cachept[DMX_CHANNELS_PER_DISPLAY];
@@ -161,7 +160,7 @@ static const uint8_t minRanges[256] = {
    60,60,60,60                                          // 252-255
 };
 
-unsigned long powerupMillis;
+unsigned long        powerupMillis;
 
 static bool          dmxIsConnected = false;
 static unsigned long lastDMXpacket;
@@ -173,7 +172,7 @@ static bool          y = false;
 static int           kpleds = 0;
 
 #ifdef TC_HAVESPEEDO
-static bool useSpeedo = true;
+static bool          useSpeedo = true;
 #endif
 
 // Forward declarations
@@ -238,6 +237,9 @@ void dmx_boot()
         #endif
     } else {
         speedo.setDot(true);
+        if(dmx_slots_to_receive < DMX_SLOTS_TO_RECEIVE_SP) {
+            dmx_slots_to_receive = DMX_SLOTS_TO_RECEIVE_SP;
+        }
     }
     #endif
 }    
@@ -270,13 +272,23 @@ void dmx_setup()
 
     Serial.println(F("Time Circuits Display DMX version " TC_VERSION " " TC_VERSION_EXTRA));
     Serial.println(F("(C) 2024 Thomas Winischhofer (A10001986)"));
+    #ifdef DMX_USE_VERIFY
+    Serial.printf("Verification is enabled; checking channel %d for value %d", DMX_VERIFY_CHANNEL, DMX_VERIFY_VALUE);
+    #else
+    Serial.println("Verification is disabled");
+    #endif
+    #ifdef TC_HAVESPEEDO
+    Serial.println("Speedo support is enabled");
+    #else
+    Serial.println("Speedo support is disabled");
+    #endif
 
     // Pin for monitoring seconds from RTC
     pinMode(SECONDS_IN_PIN, INPUT_PULLDOWN);
 
     // RTC setup
     if(!rtc.begin(powerupMillis)) {
-        Serial.println("RTC not found!");
+        Serial.println("RTC not found, no 1Hz oscillator available");
     }
     if(rtc.lostPower()) {
         // Lost power and battery didn't keep time, so set some default time
@@ -300,13 +312,13 @@ void dmx_setup()
  *
  *********************************************************************************/
 
-void dmx_loop() 
+void dmx_loop()
 {
     bool newDataDT = false;
     bool newDataPT = false;
     bool newDataLT = false;
-    
-    if(dmx_receive_num(dmxPort, &packet, DMX_SLOTS_TO_RECEIVE, 0)) {
+
+    if(dmx_receive_num(dmxPort, &packet, dmx_slots_to_receive, 0)) {
         
         lastDMXpacket = millis();
     
@@ -421,7 +433,7 @@ void dmx_loop()
 
 /*********************************************************************************
  * 
- * helpers
+ * DMX translation
  *
  *********************************************************************************/
 
@@ -500,8 +512,8 @@ static void setDisplay(clockDisplay *display, int base, int kpbit)
 
 /*
  * Speedo fixture:
- * 0 = ch1 - Sets the speed
- * 1 = ch2 - Master Intensity (0-255)
+ * 0 = ch1 - Sets the speed (0-255 = 0-88mph)
+ * 1 = ch2 - Master Intensity (0-255; 0=off; 1-255 = darkest-brightest)
  */
 #ifdef TC_HAVESPEEDO
 static void setSpeedoDisplay(speedDisplay *display, int base)

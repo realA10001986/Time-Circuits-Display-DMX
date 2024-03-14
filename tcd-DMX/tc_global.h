@@ -15,30 +15,42 @@
 
 // These must not contain any characters other than
 // '0'-'9', 'A'-'Z', '(', ')', '.', '_', '-' or space
-#define TC_VERSION "V0.10"
-#define TC_VERSION_EXTRA "MAR082024"
+#define TC_VERSION "V0.11"
+#define TC_VERSION_EXTRA "MAR092024"
+
+/*************************************************************************
+ ***                        Build configuration                        ***
+ *************************************************************************/
 
 //#define TC_DBG              // debug output on Serial
 
 // If this is uncommented, the firmware uses channel DMX_VERIFY_CHANNEL
 // for packet verification. The value of this channel must, at all times,
 // be DMX_VERIFY_VALUE for a packet to be accepted.
+// Must be disabled (commented) if the DMX controller's blackout function 
+// is to be used but lacks a way to exclude channels (like in case of 
+// QLC+ version 4.x)
 //#define DMX_USE_VERIFY
 
+// If this is uncommented, support for the speedo display is included.
+// The speedo is another fixture as its channel number is independent
+// of the TCD's channels.
 //#define TC_HAVESPEEDO
-#define TC_SPEEDO_TYPE 11 //0
+// Speedo type. 0 for CircuitSetup's speedo display. See dispTypes in
+// speeddisplay.h for other supported types.
+#define TC_SPEEDO_TYPE    0
 
 /*************************************************************************
  ***                             GPIO pins                             ***
  *************************************************************************/
 
-#define STATUS_LED_PIN     2      // Status LED (on ESP)
+#define STATUS_LED_PIN     2      // Status LED (on ESP) (unused in DMX version)
 #define SECONDS_IN_PIN    15      // SQW Monitor 1Hz from the DS3231
-#define ENTER_BUTTON_PIN  16      // enter key
-#define WHITE_LED_PIN     17      // white led
+#define ENTER_BUTTON_PIN  16      // enter key (unused in DMX version)
+#define WHITE_LED_PIN     17      // white led (unused in DMX version)
 #define LEDS_PIN          12      // Red/amber/green LEDs (TCD-Control V1.3+)
 
-// I2S audio pins
+// I2S audio pins (unused in DMX version)
 #define I2S_BCLK_PIN      26
 #define I2S_LRCLK_PIN     25
 #define I2S_DIN_PIN       33
@@ -49,16 +61,12 @@
 #define SPI_MISO_PIN      19
 #define SPI_SCK_PIN       18
 
-#define VOLUME_PIN        32      // analog input pin
-
-#define FAKE_POWER_BUTTON_PIN       13  // Fake "power" switch
-#define EXTERNAL_TIMETRAVEL_IN_PIN  27  // Externally triggered TT (input)
-#define EXTERNAL_TIMETRAVEL_OUT_PIN 14  // TT trigger output
+#define VOLUME_PIN        32      // analog input pin (unused in DMX version)
 
 // DMX
-#define DMX_TRANSMIT 14
-#define DMX_RECEIVE  13
-#define DMX_ENABLE   27
+#define DMX_TRANSMIT      14
+#define DMX_RECEIVE       13
+#define DMX_ENABLE        27
 
 
 /*************************************************************************
@@ -71,6 +79,5 @@
 
 // Num of characters on display
 #define DISP_LEN      13
-
 
 #endif

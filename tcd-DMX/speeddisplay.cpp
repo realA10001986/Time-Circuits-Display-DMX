@@ -1,9 +1,9 @@
 /*
  * -------------------------------------------------------------------
- * CircuitSetup.us Time Circuits Display
- * (C) 2022-2024 Thomas Winischhofer (A10001986)
- * https://github.com/realA10001986/Time-Circuits-Display
- * https://tcd.out-a-ti.me
+ * CircuitSetup.us Time Circuits Display - DMX-controlled
+ * (C) 2024 Thomas Winischhofer (A10001986)
+ * All rights reserved.
+ * -------------------------------------------------------------------
  *
  * speedDisplay Class: Speedo Display
  *
@@ -17,26 +17,6 @@
  * 
  * The i2c slave address must be 0x70.
  * -------------------------------------------------------------------
- * License: MIT
- * 
- * Permission is hereby granted, free of charge, to any person 
- * obtaining a copy of this software and associated documentation 
- * files (the "Software"), to deal in the Software without restriction, 
- * including without limitation the rights to use, copy, modify, 
- * merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to 
- * do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be 
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY 
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include "tc_global.h"
@@ -311,10 +291,6 @@ static const struct dispConf {
   { false, 1, 2, 0, 0, 2, 0,   5, 0x2080, 4, 0, { 1, 2, 3, 4 }, { 0, 0, 0, 0 }, font144segGrove },  // SP_GROVE_4DIG14 (left)
   { false, 0, 1, 0, 0, 1, 0, 255,      0, 2, 0, { 0, 1 },       { 0, 0, 0, 0 }, font14segGeneric }, // like SP_ADAF_14x4L(ADA-1911), but left tube only (TW wall clock)
   { true,  0, 1, 0, 0, 1, 0, 255,      0, 2, 0, { 0, 1 },       { 0, 0, 0, 0 }, font7segGeneric },  // like SP_ADAF_7x4L(ADA-878), but left tube only (TW speedo replica) - needs rewiring
-// .... for testing only:
-//{ true,  7, 7, 0, 8, 7, 8, 255,      0, 2, 1, { 7 },          { 0, 8 },       font7segGeneric },  // SP_TCD_TEST7
-//{ false, 1, 2, 0, 0, 2, 0, 255,      0, 3, 0, { 0, 1, 2 },    { 0, 0, 0 },    font14segGeneric }, // SP_TCD_TEST14 right
-//{ false, 0, 1, 0, 0, 1, 0, 255,      0, 3, 0, { 0, 1, 2 },    { 0, 0, 0 },    font14segGeneric }  // SP_TCD_TEST14 left
 };
 
 // Grove 4-digit special handling
@@ -581,60 +557,6 @@ void speedDisplay::setSpeed(int8_t speedNum)
     if(_dot01) _displayBuffer[_dot_pos01] |= (*(_fontXSeg + 36) << _dot01_shift);
 }
 
-#ifdef TC_HAVETEMP
-void speedDisplay::setTemperature(float temp)
-{
-    char buf[8];
-    char alignBuf[20];
-    int t, strlenBuf = 0;
-    const char *myNan = "----";
-
-    switch(_num_digs) {
-    case 2:
-        if(isnan(temp))        setText(myNan);
-        else if(temp <= -10.0) setText("Lo");
-        else if(t >= 100.0)    setText("Hi");
-        else if(temp >= 10.0 || temp < 0.0) {
-            t = (int)roundf(temp);
-            sprintf(buf, "%d", t);
-            setText(buf);
-        } else {
-            sprintf(buf, "%.1f", temp);
-            setText(buf);
-        }
-        break;
-    case 3:
-        if(isnan(temp))         setText(myNan);
-        else if(temp <= -100.0) setText("Low");
-        else if(t >= 1000.0)    setText("Hi");
-        else if(temp >= 100.0 || temp <= -10.0) {
-            t = (int)roundf(temp);
-            sprintf(buf, "%d", t);
-            setText(buf);
-        } else {
-            sprintf(buf, "%.1f", temp);
-            setText(buf);
-        }
-        break;
-    default:
-        sprintf(buf, isnan(temp) ? myNan : "%.1f", temp);
-        for(int i = 0; i < strlen(buf); i++) {
-            if(buf[i] != '.') strlenBuf++;
-        }
-        if(strlenBuf < _num_digs) {
-            for(int i = 0; i < 15 && i < (_num_digs - strlenBuf); i++) {
-                alignBuf[i] = ' ';
-                alignBuf[i+1] = 0;
-            }
-            strcat(alignBuf, buf);
-            setText(alignBuf);
-        } else {
-            setText(buf);
-        }
-    }
-}
-#endif
-
 // Set/clear dot at speed's 1's position.
 void speedDisplay::setDot(bool dot01)
 {
@@ -667,98 +589,6 @@ bool speedDisplay::getColon()
     return _colon;
 }
 
-// Special purpose -------------------------------------------------------------
-
-#if 0 // Currently unused
-
-// Clears the display RAM and only shows the given text
-// does not use the buffer, writes directly to display
-// (clears colon; dots work like the buffer version.)
-void speedDisplay::showTextDirect(const char *text)
-{
-    int idx = 0, pos = 0, dgt = 0;
-    int temp = 0;
-    uint16_t tt = 0, spec = 0;
-    bool commaAdded = false;
-
-    clearDisplay();
-
-    if(_is7seg) {
-        while(text[idx] && (pos < (_num_digs / (1<<_buf_packed)))) {
-            commaAdded = false;
-            temp = getLEDChar(text[idx]) << (*(_bufShftArr + dgt));
-            idx++;
-            if(text[idx] == '.') {
-                temp |= (getLEDChar('.') << (*(_bufShftArr + dgt)));
-                idx++;
-                commaAdded = true;
-            }
-            dgt++;
-            if(_buf_packed && text[idx]) {
-                temp |= (getLEDChar(text[idx]) << (*(_bufShftArr + dgt)));
-                idx++;
-                if(text[idx] == '.') {
-                    temp |= (getLEDChar('.') << (*(_bufShftArr + dgt)));
-                    idx++;
-                }
-                dgt++;
-            }
-            directCol(*(_bufPosArr + pos), temp);
-            switch(_dispType) {
-            case SP_ADAF_B7x4:
-            case SP_ADAF_B7x4L:
-                if(pos == 2 && commaAdded) {
-                    spec |= 0x10;
-                }
-                break;
-            }
-            pos++;
-        }
-    } else {
-        while(text[idx] && pos < _num_digs) {
-            tt = getLEDChar(text[idx]);
-            idx++;
-            if(text[idx] == '.') {
-                tt |= getLEDChar('.');
-                idx++;
-            }
-            directCol(*(_bufPosArr + pos), tt);
-            switch(_dispType) {
-            case SP_GROVE_4DIG14:
-            case SP_GROVE_4DIG14L:
-                spec |= ((tt & 0x2) ? gr4_sh1[pos] : 0);
-                spec |= ((tt & 0x4) ? gr4_sh2[pos] : 0);
-                break;
-            }
-            pos++;
-        }
-    }
-
-    switch(_dispType) {
-    case SP_ADAF_B7x4:
-    case SP_ADAF_B7x4L:
-    case SP_GROVE_4DIG14:
-    case SP_GROVE_4DIG14L:
-        directCol(_colon_pos, spec);
-    }
-}
-
-void speedDisplay::setColonDirect(bool colon)
-{
-    uint16_t t = _lastBufPosCol;
-
-    _colon = colon;
-
-    if(_colon_pos < 255) {
-        if(_colon) t |= _colon_bm;
-        else       t &= (~_colon_bm);
-
-        directCol(_colon_pos, t);
-    }
-}
-
-#endif // if 0
-
 // Private functions ###########################################################
 
 
@@ -786,22 +616,6 @@ uint16_t speedDisplay::getLEDChar(uint8_t value)
 
     return 0;
 }
-
-#if 0 // Unused currently
-// Directly write to a column with supplied segments
-// (leave buffer intact, directly write to display)
-void speedDisplay::directCol(int col, int segments)
-{
-    Wire.beginTransmission(_address);
-    Wire.write(col * 2);  // 2 bytes per col * position
-    Wire.write(segments & 0xFF);
-    Wire.write(segments >> 8);
-    Wire.endTransmission();
-
-    if(col == _colon_pos)
-        _lastBufPosCol = segments;
-}
-#endif
 
 // Directly clear the display
 void speedDisplay::clearDisplay()
