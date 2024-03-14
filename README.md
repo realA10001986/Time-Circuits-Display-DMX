@@ -92,7 +92,7 @@ Requires [esp_dmx](https://github.com/someweisguy/esp_dmx) library v4.0.1 or lat
     </tr>
 </table>
 
-![DMXshield](https://github.com/realA10001986/Time-Circuits-Display-DMX/assets/76924199/4bfaf9ed-08e4-4901-805e-a25611bbe694)
+![DMXshield-TCD](https://github.com/realA10001986/Time-Circuits-Display-DMX/assets/76924199/66f4c3ab-215e-4fb2-8ca0-15d16c9f164f)
 
 The required 3.3V are generated through a voltage converter (like [this](https://www.amazon.com/dp/B09Q8Q3ZVM) one) attached to the LCD-to-DMX shield:
 
