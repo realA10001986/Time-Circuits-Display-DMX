@@ -47,7 +47,7 @@ If speedo support is enabled (by defining TC_HAVESPEEDO in tcd_global.h), additi
 <table>
     <tr><td>DMX channel</td><td>Function</td></tr>
     <tr><td>57</td><td>Speedo: Speed (0-255 = 0-88mph)</td></tr>
-    <tr><td>58</td><td>Speedo: Brightness (0-255)</td></tr>
+    <tr><td>58</td><td>Speedo: Brightness (0=off; 1-255=darkest-brightest)</td></tr>
 </table>
 
 #### Packet verification
