@@ -3,7 +3,7 @@
 
 This repository holds a firmware for CircuitSetup's [Time Circuits Display](https://circuitsetup.us/product/complete-time-circuits-display-kit/) kit which allows to control each element through DMX. It is designed to work using the [Sparkfun LED-to-DMX](https://www.sparkfun.com/products/15110) shield. (DMX control is also available for [Flux Capacitor](https://github.com/realA10001986/Flux-Capacitor-DMX) and [SID](https://github.com/realA10001986/SID-DMX)).
 
-This firmware was used in the musical:
+This firmware was used in this musical:
 
 | [![Watch the video](https://img.youtube.com/vi/IywO5m0-ziw/0.jpg)](https://youtu.be/IywO5m0-ziw?si=xcBQazYC4C0hpwi8) |
 |:--:|
