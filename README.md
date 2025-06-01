@@ -98,7 +98,7 @@ Requires [esp_dmx](https://github.com/someweisguy/esp_dmx) library v4.0.1 or lat
 
 <img src="img/DMXshield-TCD.jpg">
 
-The required 3.3V are generated through a voltage converter (like [this](https://www.amazon.com/Anmbest-AMS1117-3-3-4-75V-12V-Voltage-Regulator/dp/B07CP4P5XJ/ref=sr_1_5) one) attached to the LCD-to-DMX shield:
+If you have a TCD control board 1.4 or later, 3.3V can be grabbed from the respective header. For older control boards, 3.3V are generated through a voltage converter (like [this](https://www.amazon.com/Anmbest-AMS1117-3-3-4-75V-12V-Voltage-Regulator/dp/B07CP4P5XJ/ref=sr_1_5) one) attached to the LCD-to-DMX shield:
 
 <img src="img/DMXshield-LS.jpg">
 
